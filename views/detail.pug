@@ -1,0 +1,18 @@
+extends ../layout
+
+block content
+  h2 Detalle usuario
+
+  p
+    strong ID:
+    | #{usuario.id}
+
+  p
+    strong Nombre:
+    | #{usuario.nombre}
+
+  p
+    strong Email:
+    | #{usuario.email}
+
+  a(href="/usuarios") Volver

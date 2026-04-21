@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "nombre": "Ayelén",
+    "email": "aye@techretail.com",
+    "telefono": "+549341306988",
+    "password": "admin1234",
+    "rol": "admin",
+    "tiendaId": "99AABB-2233",
+    "activo": true,
+    "fechaCreacion": "2026-04-21T18:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "nombre": "Lucio",
+    "email": "lucio@gmail.com",
+    "telefono": "+549341306989",
+    "password": "user1234",
+    "rol": "user",
+    "tiendaId": "99AACC-2233",
+    "activo": true,
+    "fechaCreacion": "2026-04-20T18:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "nombre": "Carlos",
+    "email": "carlos@gmail.com",
+    "rol": "user",
+    "telefono": "+549342446788",
+    "password": "user443",
+    "tiendaId": "99AAZZ-2422",
+    "activo": true,
+    "fechaCreacion": "2026-04-21T22:04:54.738Z"
+  }
+]

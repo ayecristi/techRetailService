@@ -1,0 +1,38 @@
+extends layout
+
+block content
+  h2 Nuevo usuario
+
+  form(method="POST", action="/usuarios")
+     
+    label ID :
+    input(type="number", name="id")
+
+    br
+    br
+
+    label Nombre:
+    input(type="text", name="nombre")
+
+    br
+    br
+
+    label Email:
+    input(type="text", name="email")
+
+    br
+    br
+
+    label Rol:
+    input(type="text", name="rol")
+    
+    br
+    br
+
+    label Teléfono:
+    input(type="text", name="telefono") 
+
+    br
+    br
+
+    button(type="submit") Guardar
