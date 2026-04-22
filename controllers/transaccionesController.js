@@ -56,7 +56,7 @@ const obtenerTransaccionPorIdVista = (req, res) => {
 // CREATE
 const crearTransaccion = (req, res) => {
     const transacciones = leerTransacciones();
-    const { tiendaId, usuarioId, monto, metodoPago, estado, items, referencia, tiendaId } = req.body;
+    const { tiendaId, usuarioId, monto, metodoPago, estado, items, referencia } = req.body;
 
     if (!tiendaId || !usuarioId || !monto || !metodoPago) {
         return res.status(400).json({
@@ -89,7 +89,7 @@ const formularioNuevaTransaccion = (req, res) => {
 // POST (formulario)
 const crearTransaccionFormulario = (req, res) => {
     const transacciones = leerTransacciones();
-    const { tiendaId, usuarioId, monto, metodoPago, estado, referencia, tiendaId } = req.body;
+    const { tiendaId, usuarioId, monto, metodoPago, estado, referencia } = req.body;
 
     if (!tiendaId || !usuarioId || !monto || !metodoPago) {
         return res.status(400).render("transacciones/crear", {

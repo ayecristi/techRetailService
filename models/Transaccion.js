@@ -1,7 +1,6 @@
 class Transaccion {
-    constructor(id, tiendaId, usuarioId, monto, metodoPago, estado, descripcion, tiendaId) {
+    constructor(id, tiendaId, usuarioId, monto, metodoPago, estado, descripcion) {
         this.id = id; 
-        this.tiendaOrigenId = tiendaId;
         this.usuarioId = usuarioId; // definimos si es cliente con el rol 'cliente'
         this.tiendaId = tiendaId || null;
 
