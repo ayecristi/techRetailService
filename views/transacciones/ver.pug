@@ -1,0 +1,61 @@
+extends ../layout
+
+block content
+  if error
+    p Error: #{error}
+  else
+    h2 Detalle transacción
+
+    p
+      strong ID:
+      | #{transaccion.id}
+
+    p
+      strong Tienda ID:
+      | #{transaccion.tiendaId}
+
+    p
+      strong Usuario ID:
+      | #{transaccion.usuarioId}
+
+    p
+      strong Referencia:
+      | #{transaccion.referencia}
+
+    p
+      strong Fecha:
+      | #{new Date(transaccion.creadoEn).toLocaleString('es-AR')}
+
+    p
+      strong Monto:
+      | $#{transaccion.monto.toFixed(2)}
+
+    p
+      strong Comisión:
+      | $#{transaccion.comision.toFixed(2)}
+
+    p
+      strong Método de Pago:
+      | #{transaccion.metodoPago}
+
+    p
+      strong Estado:
+      | #{transaccion.estado}
+
+    if transaccion.items && transaccion.items.length > 0
+      h3 Ítems de la Compra
+      table(border="1")
+        tr
+          th Producto
+          th Cantidad
+          th Precio Unitario
+          th Subtotal
+        each item in transaccion.items
+          tr
+            td= item.nombre
+            td= item.cantidad
+            td $#{item.precioUnitario.toFixed(2)}
+            td $#{item.subtotal.toFixed(2)}
+
+    p
+      a(href="/transacciones") Volver

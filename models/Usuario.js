@@ -13,6 +13,16 @@ class Usuario {
         this.activo = activo;
         this.fechaCreacion = new Date().toISOString();
     }
+
+    // Verificar si es administrador
+    esAdmin() {
+        return this.rol === 'admin';
+    }
+
+    // Verificar si es cliente
+    esCliente() {
+        return this.rol === 'cliente';
+    }
 }
 
 module.exports = Usuario;

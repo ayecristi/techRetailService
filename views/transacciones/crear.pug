@@ -1,0 +1,53 @@
+extends ../layout
+
+block content
+  h2 Nueva transacción
+
+  form(method="POST" action="/transacciones")
+    p
+      label(for="tiendaId") ID Tienda:
+      br
+      input(type="number" id="tiendaId" name="tiendaId" required)
+
+    p
+      label(for="usuarioId") ID Usuario:
+      br
+      input(type="number" id="usuarioId" name="usuarioId" required)
+
+    p
+      label(for="monto") Monto ($):
+      br
+      input(type="number" id="monto" name="monto" step="0.01" required)
+
+    p
+      label(for="metodoPago") Método de Pago:
+      br
+      select(id="metodoPago" name="metodoPago" required)
+        option(value="") -- Seleccionar --
+        option(value="tarjeta") Tarjeta de Crédito/Débito
+        option(value="transferencia") Transferencia Bancaria
+        option(value="efectivo") Efectivo
+        option(value="cheque") Cheque
+
+    p
+      label(for="estado") Estado:
+      br
+      select(id="estado" name="estado")
+        option(value="pendiente" selected) Pendiente
+        option(value="completado") Completado
+        option(value="cancelado") Cancelado
+
+    p
+      label(for="referencia") Referencia/Factura:
+      br
+      input(type="text" id="referencia" name="referencia")
+
+    p
+      label(for="tiendaId") ID Tienda (opcional):
+      br
+      input(type="number" id="tiendaId" name="tiendaId")
+
+    p
+      button(type="submit") Guardar Transacción
+      |  
+      a(href="/transacciones") Cancelar

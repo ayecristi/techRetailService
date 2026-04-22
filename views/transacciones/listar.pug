@@ -1,0 +1,37 @@
+extends ../layout
+
+block content
+  h2 Lista de transacciones
+
+  p
+    a(href="/transacciones/crear") + Nueva transacción
+
+  if transacciones && transacciones.length > 0
+    table(border="1")
+      tr
+        th ID
+        th Tienda ID
+        th Usuario ID
+        th Fecha
+        th Monto
+        th Método de Pago
+        th Estado
+        th Referencia
+        th Acciones
+
+      each transaccion in transacciones
+        tr
+          td= transaccion.id
+          td= transaccion.tiendaId
+          td= transaccion.usuarioId
+          td= new Date(transaccion.creadoEn).toLocaleDateString('es-AR')
+          td $#{transaccion.monto.toFixed(2)}
+          td= transaccion.metodoPago
+          td= transaccion.estado
+          td= transaccion.referencia
+          td
+            a(href=`/transacciones/vista/${transaccion.id}`) Ver
+  else
+    p No hay transacciones registradas.
+    p
+      a(href="/transacciones/crear") Crear la primera transacción

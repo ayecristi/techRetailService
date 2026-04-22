@@ -1,0 +1,75 @@
+[
+  {
+    "id": 1,
+    "tiendaId": 1,
+    "usuarioId": 2,
+    "monto": 4500.5,
+    "comision": 225.03,
+    "metodoPago": "tarjeta",
+    "estado": "completado",
+    "items": [
+      {
+        "productoId": 101,
+        "nombre": "Monitor LG 27\"",
+        "cantidad": 1,
+        "precioUnitario": 3500,
+        "subtotal": 3500
+      },
+      {
+        "productoId": 102,
+        "nombre": "Cable HDMI",
+        "cantidad": 2,
+        "precioUnitario": 500,
+        "subtotal": 1000
+      }
+    ],
+    "referencia": "FAC-2026-00001",
+    "tiendaId": null,
+    "creadoEn": "2026-04-20T14:30:00.000Z",
+    "actualizadoEn": "2026-04-20T14:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "tiendaId": 1,
+    "usuarioId": 3,
+    "monto": 2850,
+    "comision": 142.5,
+    "metodoPago": "transferencia",
+    "estado": "completado",
+    "items": [
+      {
+        "productoId": 103,
+        "nombre": "Teclado mecánico",
+        "cantidad": 1,
+        "precioUnitario": 2850,
+        "subtotal": 2850
+      }
+    ],
+    "referencia": "FAC-2026-00002",
+    "tiendaId": null,
+    "creadoEn": "2026-04-21T10:15:00.000Z",
+    "actualizadoEn": "2026-04-21T10:15:00.000Z"
+  },
+  {
+    "id": 3,
+    "tiendaId": 1,
+    "usuarioId": 2,
+    "monto": 1200,
+    "comision": 60,
+    "metodoPago": "efectivo",
+    "estado": "pendiente",
+    "items": [
+      {
+        "productoId": 104,
+        "nombre": "Mouse inalámbrico",
+        "cantidad": 3,
+        "precioUnitario": 400,
+        "subtotal": 1200
+      }
+    ],
+    "referencia": "FAC-2026-00003",
+    "suscripcionId": null,
+    "creadoEn": "2026-04-21T16:45:00.000Z",
+    "actualizadoEn": "2026-04-21T16:45:00.000Z"
+  }
+]
