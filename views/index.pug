@@ -1,29 +1,13 @@
 extends layout
 
 block content
-  h2 Lista de usuarios
-
-  table(border="1")
-    tr
-      th ID
-      th Nombre
-      th Email
-      th Rol
-      th Teléfono
-      th Tienda ID
-      th Activo
-      th Fecha de Creación
-      th Acciones
-
-    each usuario in usuarios
-      tr
-        td= usuario.id
-        td= usuario.nombre
-        td= usuario.email
-        td= usuario.rol
-        td= usuario.telefono
-        td= usuario.tiendaId
-        td= usuario.activo
-        td= usuario.fechaCreacion
-        td
-          a(href=`/usuarios/${usuario.id}`) Ver
+  h1 Panel de Control - TechRetail
+  .dashboard-grid
+    .card
+      h3 Usuarios
+      p Total registrados: #{usuarios.length}
+      a.btn(href="/usuarios/listar") Gestionar Usuarios
+    .card
+      h3 Transacciones
+      p Ventas del día: #{transacciones.length}
+      a.btn(href="/transacciones") Ver Ventas

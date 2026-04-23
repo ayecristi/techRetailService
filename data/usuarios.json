@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "nombre": "Ayelén",
+    "nombre": "Ayelén Cristi",
     "email": "aye@techretail.com",
     "telefono": "+549341306988",
     "password": "admin1234",
@@ -12,24 +12,21 @@
   },
   {
     "id": 2,
-    "nombre": "Lucio",
-    "email": "lucio@gmail.com",
-    "telefono": "+549341306989",
+    "nombre": "Lucio Gramaccioni",
+    "email": "gramaccionil@techretail.com",
+    "telefono": "+549341306988",
     "password": "user1234",
-    "rol": "cliente",
-    "tiendaId": null,
+    "rol": "user",
+    "tiendaId": "99AABB-2243",
     "activo": true,
-    "fechaCreacion": "2026-04-20T18:30:00.000Z"
+    "fechaCreacion": "2026-04-19T18:30:00.000Z"
   },
   {
     "id": 3,
-    "nombre": "Carlos",
-    "email": "carlos@gmail.com",
-    "rol": "cliente",
-    "telefono": "+549342446788",
-    "password": "user443",
-    "tiendaId": null,
-    "activo": true,
-    "fechaCreacion": "2026-04-21T22:04:54.738Z"
+    "nombre": "Agustin Perez",
+    "email": "aperez@gmail.com",
+    "rol": "vendedor",
+    "telefono": "112365478",
+    "fechaCreacion": "2026-04-23T20:27:19.253Z"
   }
 ]

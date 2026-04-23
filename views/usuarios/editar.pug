@@ -1,0 +1,29 @@
+extends ../layout
+
+block content
+  h1 Editar Usuario: #{usuario.nombre}
+  
+  .form-container
+    form(action=`/usuarios/actualizar/${usuario.id}` method="POST")
+      .form-group
+        label(for="nombre") Nombre completo
+        input#nombre(type="text" name="nombre" value=usuario.nombre required)
+      
+      .form-group
+        label(for="email") Correo Electrónico
+        input#email(type="email" name="email" value=usuario.email required)
+      
+      .form-group
+        label(for="rol") Rol del sistema
+        select#rol(name="rol")
+          option(value="admin" selected=usuario.rol === 'admin') Administrador
+          option(value="cliente" selected=usuario.rol === 'cliente') Cliente
+          option(value="vendedor" selected=usuario.rol === 'vendedor') Vendedor
+
+      .form-group
+        label(for="telefono") Teléfono
+        input#telefono(type="text" name="telefono" value=usuario.telefono)
+
+      .buttons
+        button.btn(type="submit") Guardar Cambios
+        a.btn-secondary(href="/usuarios/listar") Cancelar

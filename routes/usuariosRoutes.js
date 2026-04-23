@@ -8,17 +8,25 @@ const {
     crearUsuario,
     actualizarUsuario,
     eliminarUsuario,
-    formularioNuevoUsuario
+    formularioNuevoUsuario,
+    formularioEditarUsuario
 } = require("../controllers/usuariosController");
 
-router.get("/", obtenerUsuarios);
-router.get("/vista", obtenerUsuariosVista);
-router.get("/nuevo", formularioNuevoUsuario);
-router.get("/:id", obtenerUsuarioPorId);
-router.post("/", crearUsuario);
-router.put("/:id", actualizarUsuario);
-router.patch('/:id', actualizarUsuario);
-router.delete("/:id", eliminarUsuario);
+// Rutas para Vistas
+router.get("/listar", obtenerUsuariosVista); 
+router.get("/crear", formularioNuevoUsuario);
+router.get("/editar/:id", formularioEditarUsuario);
 
+// Rutas para API
+router.get("/api", obtenerUsuarios);
+router.get("/api/:id", obtenerUsuarioPorId);
+router.post("/api", crearUsuario);
+router.put("/api/:id", actualizarUsuario);
+router.delete("/api/:id", eliminarUsuario);
+
+// Rutas de Acción
+router.post("/guardar", crearUsuario);
+router.post("/actualizar/:id", actualizarUsuario);
+router.get("/eliminar/:id", eliminarUsuario);
 
 module.exports = router;

@@ -27,8 +27,13 @@ const obtenerUsuarios = (req, res) => {
     
 };
 const obtenerUsuariosVista = (req, res) => {
-    const usuarios = leerUsuarios();
-    res.render("index", { usuarios });
+    try {
+        const usuarios = leerUsuarios();
+        res.render("usuarios/listar", { usuarios });
+    } catch (error) {
+        console.error("ERROR AL RENDERIZAR LISTAR:", error);
+        res.status(500).send("Error interno: " + error.message);
+    }
 };
 
 // GET BY ID
@@ -49,17 +54,20 @@ const obtenerUsuarioPorId = (req, res) => {
 const crearUsuario = (req, res) => {
     const usuarios = leerUsuarios();
     const { id, nombre, email, rol, telefono, password, tiendaId, activo, fechaCreacion } = req.body;
-    const nuevoUsuario = new Usuario(id, nombre, email, rol, telefono, password, tiendaId, activo, fechaCreacion);
+    const nuevoUsuario = new Usuario(Number(id), nombre, email, rol, telefono, password, tiendaId, activo, fechaCreacion);
     usuarios.push(nuevoUsuario);
     guardarUsuarios(usuarios);
-    res.status(201).json({
-        mensaje: "Usuario creado",
-        usuario: nuevoUsuario
-    });
+    if (req.originalUrl.includes('/api')) {
+            // Si llama a la API (Thunder Client), devuelvo JSON
+            return res.status(201).json(nuevoUsuario);
+        } else {
+            // Si llamaron desde el formulario web (/guardar), redirijo a la lista
+            return res.redirect('/usuarios/listar');
+        }
 };
 
 const formularioNuevoUsuario = (req, res) => {
-    res.render("nuevo");
+    res.render("usuarios/nuevo");
 };
 
 // UPDATE
@@ -68,9 +76,11 @@ const actualizarUsuario = (req, res) => {
     const id = parseInt(req.params.id);
     const usuario = usuarios.find(u => u.id === id);
     if (!usuario) {
-        return res.status(404).json({
-            mensaje: "Usuario no encontrado"
-        });
+        if (req.originalUrl.includes('/api')) {
+            return res.status(404).json({ mensaje: "Usuario no encontrado" });
+        } else {
+            return res.status(404).send("Usuario no encontrado");
+        }
     }
 
     const { nombre, email, rol, telefono, password, tiendaId, activo } = req.body;
@@ -84,10 +94,26 @@ const actualizarUsuario = (req, res) => {
 
     guardarUsuarios(usuarios);
 
-    res.json({
-        mensaje: "Usuario actualizado",
-        usuario
-    });
+   if (req.originalUrl.includes('/api')) {
+        return res.status(200).json({
+            mensaje: "Usuario actualizado",
+            usuario
+        });
+    } else {
+        return res.redirect('/usuarios/listar');
+    }
+};
+
+const formularioEditarUsuario = (req, res) => {
+    const usuarios = leerUsuarios();
+    const id = parseInt(req.params.id);
+    const usuario = usuarios.find(u => u.id === id);
+
+    if (!usuario) {
+        return res.status(404).send("Usuario no encontrado para editar");
+    }
+
+    res.render("usuarios/editar", { usuario: usuario });
 };
 
 
@@ -97,15 +123,24 @@ const eliminarUsuario = (req, res) => {
     const id = parseInt(req.params.id);
     const nuevosUsuarios = usuarios.filter(u => u.id !== id);
     if (usuarios.length === nuevosUsuarios.length) {
-        return res.status(404).json({
-            mensaje: "Usuario no encontrado"
-        });
+        if (req.originalUrl.includes('/api')) {
+            return res.status(404).json({
+                mensaje: "Usuario no encontrado"
+            });
+        } else {
+            return res.status(404).send("Usuario no encontrado");
+        }
     }
     guardarUsuarios(nuevosUsuarios);
 
-    res.json({
-        mensaje: "Usuario eliminado"
-    });
+    //actualizar vista
+    if (req.originalUrl.includes('/api')) {
+        return res.status(200).json({
+            mensaje: "Usuario eliminado"
+        });
+    } else {
+        return res.redirect("/usuarios/listar");
+    }
 
 };
 
@@ -117,5 +152,6 @@ module.exports = {
     crearUsuario,
     actualizarUsuario,
     eliminarUsuario,
-    formularioNuevoUsuario
+    formularioNuevoUsuario,
+    formularioEditarUsuario
 };

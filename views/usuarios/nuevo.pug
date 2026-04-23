@@ -1,0 +1,42 @@
+extends ../layout
+
+block content
+    h2 Nuevo usuario
+
+    form(method="POST", action="/usuarios/guardar")
+      
+      label ID :
+      input(type="number", name="id")
+
+      br
+      br
+
+      label Nombre:
+      input(type="text", name="nombre")
+
+      br
+      br
+
+      label Email:
+      input(type="text", name="email")
+
+      br
+      br
+
+      label Rol:
+      select(id="rol" name="rol" required)
+        option(value="") -- Seleccionar --
+        option(value="admin") Administrador
+        option(value="user") Usuario
+        option(value="vendedor") Vendedor
+      
+      br
+      br
+
+      label Teléfono:
+      input(type="text", name="telefono") 
+
+      br
+      br
+      p.text-center
+        button.btn(type="submit") Guardar
