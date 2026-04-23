@@ -4,7 +4,8 @@ block content
   h2 Lista de transacciones
 
   p
-    a(href="/transacciones/crear") + Nueva transacción
+    <!-- boton exclusivo para pruebas -->
+    a.btn(href="/transacciones/crear") Nueva transacción 
 
   if transacciones && transacciones.length > 0
     table(border="1")
@@ -30,8 +31,8 @@ block content
           td= transaccion.estado
           td= transaccion.referencia
           td
-            a(href=`/transacciones/vista/${transaccion.id}`) Ver
+            a.btn(href=`/transacciones/vista/${transaccion.id}`) Ver
   else
     p No hay transacciones registradas.
     p
-      a(href="/transacciones/crear") Crear la primera transacción
+      a.btn(href="/transacciones/crear") Crear la primera transacción

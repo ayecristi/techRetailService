@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "tiendaId": 1,
+    "tiendaId": 3,
     "usuarioId": 2,
     "monto": 4500.5,
     "comision": 225.03,
@@ -24,13 +24,12 @@
       }
     ],
     "referencia": "FAC-2026-00001",
-    "tiendaId": null,
     "creadoEn": "2026-04-20T14:30:00.000Z",
     "actualizadoEn": "2026-04-20T14:30:00.000Z"
   },
   {
     "id": 2,
-    "tiendaId": 1,
+    "tiendaId": 2,
     "usuarioId": 3,
     "monto": 2850,
     "comision": 142.5,
@@ -46,7 +45,6 @@
       }
     ],
     "referencia": "FAC-2026-00002",
-    "tiendaId": null,
     "creadoEn": "2026-04-21T10:15:00.000Z",
     "actualizadoEn": "2026-04-21T10:15:00.000Z"
   },

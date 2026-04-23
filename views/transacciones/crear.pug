@@ -5,11 +5,6 @@ block content
 
   form(method="POST" action="/transacciones")
     p
-      label(for="tiendaId") ID Tienda:
-      br
-      input(type="number" id="tiendaId" name="tiendaId" required)
-
-    p
       label(for="usuarioId") ID Usuario:
       br
       input(type="number" id="usuarioId" name="usuarioId" required)
@@ -48,6 +43,6 @@ block content
       input(type="number" id="tiendaId" name="tiendaId")
 
     p
-      button(type="submit") Guardar Transacción
+      button(type="submit" class="btn" style="width: 150px; padding: 8px 16px;") Guardar
       |  
-      a(href="/transacciones") Cancelar
+      button(type="button" class="btn" style="width: 150px; padding: 8px 16px; cursor: pointer;" onclick="window.location.href='/transacciones'") Cancelar

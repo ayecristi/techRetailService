@@ -72,9 +72,9 @@ const crearTransaccion = (req, res) => {
         monto,
         metodoPago,
         estado || "pendiente",
-        referencia,
-        tiendaId
+        "" // descripcion vacia
     );
+    nuevaTransaccion.referencia = referencia || null;
 
     transacciones.push(nuevaTransaccion);
     guardarTransacciones(transacciones);
@@ -105,9 +105,9 @@ const crearTransaccionFormulario = (req, res) => {
         parseFloat(monto),
         metodoPago,
         estado || "pendiente",
-        referencia,
-        tiendaId || null
+        "" // descripcion vacia
     );
+    nuevaTransaccion.referencia = referencia || null;
 
     transacciones.push(nuevaTransaccion);
     guardarTransacciones(transacciones);
