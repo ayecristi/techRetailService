@@ -17,194 +17,229 @@ const guardarTransacciones = (transacciones) => {
     );
 };
 
-// GET ALL (API)
+// GET ALL - Unificado para API y Vista
 const obtenerTransacciones = (req, res) => {
-    const transacciones = leerTransacciones();
-    res.json(transacciones);
+    try {
+        const transacciones = leerTransacciones();
+        if (req.originalUrl.includes('/api')) {
+            return res.json(transacciones);
+        }
+        res.render("transacciones/listar", { transacciones });
+    } catch (error) {
+        console.error("ERROR AL OBTENER TRANSACCIONES:", error);
+        if (req.originalUrl.includes('/api')) {
+            return res.status(500).json({ mensaje: "Error interno del servidor" });
+        }
+        res.status(500).send("Error interno: " + error.message);
+    }
 };
 
-// GET ALL (VISTA)
-const obtenerTransaccionesVista = (req, res) => {
-    const transacciones = leerTransacciones();
-    res.render("transacciones/listar", { transacciones });
-};
-
-// GET BY ID (API)
+// GET BY ID - Unificado para API y Vista
 const obtenerTransaccionPorId = (req, res) => {
-    const transacciones = leerTransacciones();
-    const id = parseInt(req.params.id);
-    const transaccion = transacciones.find(t => t.id === id);
-    if (!transaccion) {
-        return res.status(404).json({
-            mensaje: "Transacción no encontrada"
-        });
+    try {
+        const transacciones = leerTransacciones();
+        const id = parseInt(req.params.id);
+        const transaccion = transacciones.find(t => t.id === id);
+        
+        if (!transaccion) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(404).json({ mensaje: "Transacción no encontrada" });
+            }
+            return res.status(404).render("transacciones/ver", { error: "Transacción no encontrada" });
+        }
+        
+        if (req.originalUrl.includes('/api')) {
+            return res.json(transaccion);
+        }
+        res.render("transacciones/ver", { transaccion });
+    } catch (error) {
+        console.error("ERROR AL OBTENER TRANSACCIÓN:", error);
+        if (req.originalUrl.includes('/api')) {
+            return res.status(500).json({ mensaje: "Error interno del servidor" });
+        }
+        res.status(500).send("Error interno: " + error.message);
     }
-    res.json(transaccion);
 };
 
-// GET BY ID (VISTA)
-const obtenerTransaccionPorIdVista = (req, res) => {
-    const transacciones = leerTransacciones();
-    const id = parseInt(req.params.id);
-    const transaccion = transacciones.find(t => t.id === id);
-    if (!transaccion) {
-        return res.status(404).render("transacciones/ver", { error: "Transacción no encontrada" });
-    }
-    res.render("transacciones/ver", { transaccion });
-};
-
-// CREATE
+// CREATE - Unificado para API y Formulario
 const crearTransaccion = (req, res) => {
-    const transacciones = leerTransacciones();
-    const { tiendaId, usuarioId, monto, metodoPago, estado, items, referencia } = req.body;
+    try {
+        const transacciones = leerTransacciones();
+        const { tiendaId, usuarioId, monto, metodoPago, estado, referencia } = req.body;
 
-    if (!tiendaId || !usuarioId || !monto || !metodoPago) {
-        return res.status(400).json({
-            mensaje: "Faltan datos requeridos: tiendaId, usuarioId, monto, metodoPago"
+        if (!tiendaId || !usuarioId || !monto || !metodoPago) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(400).json({
+                    mensaje: "Faltan datos requeridos: tiendaId, usuarioId, monto, metodoPago"
+                });
+            }
+            return res.status(400).render("transacciones/crear", {
+                error: "Faltan datos requeridos"
+            });
+        }
+
+        const nuevoId = transacciones.length > 0 ? Math.max(...transacciones.map(t => t.id)) + 1 : 1;
+        const nuevaTransaccion = new Transaccion(
+            nuevoId,
+            parseInt(tiendaId),
+            parseInt(usuarioId),
+            parseFloat(monto),
+            metodoPago,
+            estado || "pendiente",
+            ""
+        );
+        nuevaTransaccion.referencia = referencia || null;
+        nuevaTransaccion.creadoEn = new Date().toISOString();
+        nuevaTransaccion.actualizadoEn = new Date().toISOString();
+
+        transacciones.push(nuevaTransaccion);
+        guardarTransacciones(transacciones);
+
+        if (req.originalUrl.includes('/api')) {
+            return res.status(201).json(nuevaTransaccion);
+        }
+        res.redirect(`/transacciones/vista/${nuevoId}`);
+    } catch (error) {
+        console.error("ERROR AL CREAR TRANSACCIÓN:", error);
+        if (req.originalUrl.includes('/api')) {
+            return res.status(500).json({ mensaje: "Error interno del servidor" });
+        }
+        res.status(500).render("transacciones/crear", {
+            error: "Error al crear la transacción: " + error.message
         });
     }
-
-    const nuevoId = transacciones.length > 0 ? Math.max(...transacciones.map(t => t.id)) + 1 : 1;
-    const nuevaTransaccion = new Transaccion(
-        nuevoId,
-        tiendaId,
-        usuarioId,
-        monto,
-        metodoPago,
-        estado || "pendiente",
-        "" // descripcion vacia
-    );
-    nuevaTransaccion.referencia = referencia || null;
-    nuevaTransaccion.creadoEn = new Date().toISOString();
-    nuevaTransaccion.actualizadoEn = new Date().toISOString();
-    transacciones.push(nuevaTransaccion);
-    guardarTransacciones(transacciones);
-    res.status(201).json(nuevaTransaccion);
 };
 
-// Formulario para crear transacción
+// Formulario para nueva transacción
 const formularioNuevaTransaccion = (req, res) => {
-    res.render("transacciones/crear");
-};
-
-// POST (formulario)
-const crearTransaccionFormulario = (req, res) => {
-    const transacciones = leerTransacciones();
-    const { tiendaId, usuarioId, monto, metodoPago, estado, referencia } = req.body;
-
-    if (!tiendaId || !usuarioId || !monto || !metodoPago) {
-        return res.status(400).render("transacciones/crear", {
-            error: "Faltan datos requeridos"
-        });
+    try {
+        res.render("transacciones/crear");
+    } catch (error) {
+        console.error("ERROR AL RENDERIZAR FORMULARIO:", error);
+        res.status(500).send("Error interno: " + error.message);
     }
-
-    const nuevoId = transacciones.length > 0 ? Math.max(...transacciones.map(t => t.id)) + 1 : 1;
-    const nuevaTransaccion = new Transaccion(
-        nuevoId,
-        parseInt(tiendaId),
-        parseInt(usuarioId),
-        parseFloat(monto),
-        metodoPago,
-        estado || "pendiente",
-        "" // descripcion vacia
-    );
-    nuevaTransaccion.referencia = referencia || null;
-    nuevaTransaccion.creadoEn = new Date().toISOString();
-    nuevaTransaccion.actualizadoEn = new Date().toISOString();
-
-    transacciones.push(nuevaTransaccion);
-    guardarTransacciones(transacciones);
-    res.redirect(`/transacciones/vista/${nuevoId}`);
 };
 
-// UPDATE
+// UPDATE - Unificado para API y Formulario
 const actualizarTransaccion = (req, res) => {
-    const transacciones = leerTransacciones();
-    const id = parseInt(req.params.id);
-    const transaccionIndex = transacciones.findIndex(t => t.id === id);
+    try {
+        const transacciones = leerTransacciones();
+        const id = parseInt(req.params.id);
+        const transaccionIndex = transacciones.findIndex(t => t.id === id);
 
-    if (transaccionIndex === -1) {
-        return res.status(404).json({
-            mensaje: "Transacción no encontrada"
-        });
+        if (transaccionIndex === -1) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(404).json({ mensaje: "Transacción no encontrada" });
+            }
+            return res.status(404).send("Transacción no encontrada");
+        }
+
+        const { usuarioId, montoTotal, metodoPago, estado, referencia, activo } = req.body;
+        const transaccionActualizada = {
+            ...transacciones[transaccionIndex],
+            ...(usuarioId && { usuarioId: parseInt(usuarioId) }),
+            ...(montoTotal && { montoTotal: parseFloat(montoTotal) }),
+            ...(metodoPago && { metodoPago }),
+            ...(estado && { estado }),
+            ...(referencia !== undefined && { referencia }),
+            ...(activo !== undefined && { activo }),
+            actualizadoEn: new Date().toISOString()
+        };
+
+        transacciones[transaccionIndex] = transaccionActualizada;
+        guardarTransacciones(transacciones);
+
+        if (req.originalUrl.includes('/api')) {
+            return res.json(transaccionActualizada);
+        }
+        res.redirect('/transacciones/listar');
+    } catch (error) {
+        console.error("ERROR AL ACTUALIZAR TRANSACCIÓN:", error);
+        if (req.originalUrl.includes('/api')) {
+            return res.status(500).json({ mensaje: "Error interno del servidor" });
+        }
+        res.status(500).send("Error interno: " + error.message);
     }
-
-    const { usuarioId, montoTotal, metodoPago, estado, items, referencia, activo } = req.body;
-    const transaccionActualizada = {
-        ...transacciones[transaccionIndex],
-        ...(usuarioId && { usuarioId }),
-        ...(montoTotal && { montoTotal }),
-        ...(metodoPago && { metodoPago }),
-        ...(estado && { estado }),
-        ...(items && { items }),
-        ...(referencia && { referencia }),
-        ...(activo !== undefined && { activo }),
-        actualizadoEn: new Date().toISOString()
-    };
-
-    transacciones[transaccionIndex] = transaccionActualizada;
-    guardarTransacciones(transacciones);
-    res.json(transaccionActualizada);
 };
 
-// DELETE
+// DELETE - Unificado para API y Formulario
 const eliminarTransaccion = (req, res) => {
-    const transacciones = leerTransacciones();
-    const id = parseInt(req.params.id);
-    const transaccionIndex = transacciones.findIndex(t => t.id === id);
+    try {
+        const transacciones = leerTransacciones();
+        const id = parseInt(req.params.id);
+        const transaccionIndex = transacciones.findIndex(t => t.id === id);
 
-    if (transaccionIndex === -1) {
-        return res.status(404).json({
-            mensaje: "Transacción no encontrada"
-        });
+        if (transaccionIndex === -1) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(404).json({ mensaje: "Transacción no encontrada" });
+            }
+            return res.status(404).send("Transacción no encontrada");
+        }
+
+        const transaccionEliminada = transacciones.splice(transaccionIndex, 1);
+        guardarTransacciones(transacciones);
+
+        if (req.originalUrl.includes('/api')) {
+            return res.json({
+                mensaje: "Transacción eliminada correctamente",
+                transaccion: transaccionEliminada[0]
+            });
+        }
+        res.redirect('/transacciones/listar');
+    } catch (error) {
+        console.error("ERROR AL ELIMINAR TRANSACCIÓN:", error);
+        if (req.originalUrl.includes('/api')) {
+            return res.status(500).json({ mensaje: "Error interno del servidor" });
+        }
+        res.status(500).send("Error interno: " + error.message);
     }
-
-    const transaccionEliminada = transacciones.splice(transaccionIndex, 1);
-    guardarTransacciones(transacciones);
-    res.json({
-        mensaje: "Transacción eliminada correctamente",
-        transaccion: transaccionEliminada[0]
-    });
 };
 
-// GET por usuario
+// GET por usuario (API)
 const obtenerTransaccionesPorUsuario = (req, res) => {
-    const transacciones = leerTransacciones();
-    const usuarioId = parseInt(req.params.usuarioId);
-    const transaccionesUsuario = transacciones.filter(t => t.usuarioId === usuarioId);
+    try {
+        const transacciones = leerTransacciones();
+        const usuarioId = parseInt(req.params.usuarioId);
+        const transaccionesUsuario = transacciones.filter(t => t.usuarioId === usuarioId);
 
-    if (transaccionesUsuario.length === 0) {
-        return res.status(404).json({
-            mensaje: "No hay transacciones para este usuario"
-        });
+        if (transaccionesUsuario.length === 0) {
+            return res.status(404).json({
+                mensaje: "No hay transacciones para este usuario"
+            });
+        }
+
+        res.json(transaccionesUsuario);
+    } catch (error) {
+        console.error("ERROR AL FILTRAR POR USUARIO:", error);
+        res.status(500).json({ mensaje: "Error interno del servidor" });
     }
-
-    res.json(transaccionesUsuario);
 };
 
-// GET por tienda
+// GET por tienda (API)
 const obtenerTransaccionesPorTienda = (req, res) => {
-    const transacciones = leerTransacciones();
-    const tiendaId = parseInt(req.params.tiendaId);
-    const transaccionesTienda = transacciones.filter(t => t.tiendaId === tiendaId);
+    try {
+        const transacciones = leerTransacciones();
+        const tiendaId = parseInt(req.params.tiendaId);
+        const transaccionesTienda = transacciones.filter(t => t.tiendaId === tiendaId);
 
-    if (transaccionesTienda.length === 0) {
-        return res.status(404).json({
-            mensaje: "No hay transacciones para esta tienda"
-        });
+        if (transaccionesTienda.length === 0) {
+            return res.status(404).json({
+                mensaje: "No hay transacciones para esta tienda"
+            });
+        }
+
+        res.json(transaccionesTienda);
+    } catch (error) {
+        console.error("ERROR AL FILTRAR POR TIENDA:", error);
+        res.status(500).json({ mensaje: "Error interno del servidor" });
     }
-
-    res.json(transaccionesTienda);
 };
 
 module.exports = {
     obtenerTransacciones,
-    obtenerTransaccionesVista,
     obtenerTransaccionPorId,
-    obtenerTransaccionPorIdVista,
     crearTransaccion,
     formularioNuevaTransaccion,
-    crearTransaccionFormulario,
     actualizarTransaccion,
     eliminarTransaccion,
     obtenerTransaccionesPorUsuario,
