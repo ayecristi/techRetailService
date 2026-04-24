@@ -69,5 +69,20 @@
     "suscripcionId": null,
     "creadoEn": "2026-04-21T16:45:00.000Z",
     "actualizadoEn": "2026-04-21T16:45:00.000Z"
+  },
+  {
+    "id": 4,
+    "usuarioId": 2,
+    "tiendaId": 1,
+    "monto": 15000,
+    "comision": 0,
+    "montoNeto": null,
+    "descripcion": "",
+    "metodoPago": "efectivo",
+    "estado": "completado",
+    "items": [],
+    "referencia": "FAC-2026-00009",
+    "creadoEn": "2026-04-24T14:56:40.148Z",
+    "actualizadoEn": "2026-04-24T14:56:45.801Z"
   }
 ]

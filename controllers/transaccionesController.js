@@ -75,7 +75,8 @@ const crearTransaccion = (req, res) => {
         "" // descripcion vacia
     );
     nuevaTransaccion.referencia = referencia || null;
-
+    nuevaTransaccion.creadoEn = new Date().toISOString();
+    nuevaTransaccion.actualizadoEn = new Date().toISOString();
     transacciones.push(nuevaTransaccion);
     guardarTransacciones(transacciones);
     res.status(201).json(nuevaTransaccion);
@@ -108,6 +109,8 @@ const crearTransaccionFormulario = (req, res) => {
         "" // descripcion vacia
     );
     nuevaTransaccion.referencia = referencia || null;
+    nuevaTransaccion.creadoEn = new Date().toISOString();
+    nuevaTransaccion.actualizadoEn = new Date().toISOString();
 
     transacciones.push(nuevaTransaccion);
     guardarTransacciones(transacciones);
@@ -135,7 +138,8 @@ const actualizarTransaccion = (req, res) => {
         ...(estado && { estado }),
         ...(items && { items }),
         ...(referencia && { referencia }),
-        ...(activo !== undefined && { activo })
+        ...(activo !== undefined && { activo }),
+        actualizadoEn: new Date().toISOString()
     };
 
     transacciones[transaccionIndex] = transaccionActualizada;
