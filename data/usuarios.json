@@ -28,5 +28,23 @@
     "rol": "vendedor",
     "telefono": "112365478",
     "fechaCreacion": "2026-04-23T20:27:19.253Z"
+  },
+  {
+    "id": 5,
+    "nombre": "Juan",
+    "email": "juan@gmail.com",
+    "rol": "user",
+    "telefono": "3413055877",
+    "fechaCreacion": "2026-04-24T18:49:42.435Z"
+  },
+  {
+    "id": 7,
+    "nombre": "Prueba Thunder",
+    "email": "thunder@techretail.com",
+    "rol": "vendedor",
+    "telefono": "3415550000",
+    "password": "test1234",
+    "tiendaId": "TEST-123",
+    "fechaCreacion": "2026-04-24T18:50:24.263Z"
   }
 ]
