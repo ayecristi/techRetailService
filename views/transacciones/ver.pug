@@ -58,4 +58,9 @@ block content
             td $#{item.subtotal.toFixed(2)}
 
     p
-      a.btn(href="/transacciones") Volver
+      a.btn(href="/transacciones/listar") Volver
+      |  
+      a.btn(href=`/transacciones/editar/${transaccion.id}`) Editar
+      |  
+      form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="display:inline" onsubmit="return confirm('¿Está seguro de eliminar esta transacción?')")
+        button.btn(type="submit" style="background-color: #ff4444; color: white;") Eliminar

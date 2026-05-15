@@ -6,7 +6,7 @@
     "monto": 4500.5,
     "comision": 225.03,
     "metodoPago": "tarjeta",
-    "estado": "completado",
+    "estado": "pendiente",
     "items": [
       {
         "productoId": 101,
@@ -25,7 +25,7 @@
     ],
     "referencia": "FAC-2026-00001",
     "creadoEn": "2026-04-20T14:30:00.000Z",
-    "actualizadoEn": "2026-04-20T14:30:00.000Z"
+    "actualizadoEn": "2026-04-24T20:55:01.870Z"
   },
   {
     "id": 2,

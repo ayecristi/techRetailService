@@ -1,49 +1,80 @@
-class Transaccion {
-    constructor(id, tiendaId, usuarioId, monto, metodoPago, estado, descripcion) {
-        this.id = id; 
-        this.usuarioId = usuarioId; // definimos si es cliente con el rol 'cliente'
-        this.tiendaId = tiendaId || null;
+const mongoose = require('mongoose');
 
-        this.monto = monto; 
-        this.comision = 0; 
-        this.montoNeto = null; 
-        this.descripcion = descripcion || ""; 
-
-        this.metodoPago = metodoPago; 
-        this.estado = estado || "pendiente"; // pendiente, completado, cancelado, reembolsado
-
-        this.items = []; // array de productos 
-        this.referencia = null; 
-
-        this.creadoEn = new Date().toISOString();
-        this.actualizadoEn = new Date().toISOString();
-    }
-
-    procesarVenta(datos) {
-        this.estado = "completado";
-        this.actualizadoEn = new Date().toISOString();
-        return {
-            exito: true,
-            mensaje: "Venta procesada correctamente",
-            transaccion: this
-        };
-    }
-
-    reembolsar() {
-        if (this.estado === "completado" || this.estado === "pendiente") {
-            this.estado = "reembolsado";
-            this.actualizadoEn = new Date().toISOString();
-            return {
-                exito: true,
-                mensaje: "Transacción reembolsada",
-                transaccion: this
-            };
+const transaccionSchema = new mongoose.Schema({
+    tiendaId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tienda',
+        required: [true, 'El ID de la tienda es obligatorio']
+    },
+    usuarioId: {
+        type: String,
+        required: [true, 'El ID del usuario es obligatorio']
+    },
+    monto: {
+        type: Number,
+        required: [true, 'El monto es obligatorio'],
+        min: [0, 'El monto debe ser positivo']
+    },
+    comision: {
+        type: Number,
+        default: 0,
+        min: [0, 'La comisión debe ser positiva']
+    },
+    montoNeto: {
+        type: Number,
+        default: function() {
+            return this.monto - this.comision;
         }
-        return {
-            exito: false,
-            mensaje: "No se puede reembolsar transacciones en estado: " + this.estado
-        };
+    },
+    descripcion: {
+        type: String,
+        trim: true,
+        maxlength: [500, 'La descripción no puede exceder 500 caracteres']
+    },
+    metodoPago: {
+        type: String,
+        required: [true, 'El método de pago es obligatorio'],
+        enum: {
+            values: ['efectivo', 'tarjeta', 'transferencia', 'paypal', 'criptomoneda'],
+            message: 'Método de pago no válido'
+        }
+    },
+    estado: {
+        type: String,
+        enum: {
+            values: ['pendiente', 'completado', 'cancelado', 'reembolsado'],
+            message: 'Estado no válido'
+        },
+        default: 'pendiente'
+    },
+    items: [{
+        productoId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Producto'
+        },
+        nombre: String,
+        cantidad: {
+            type: Number,
+            min: [1, 'La cantidad debe ser al menos 1']
+        },
+        precioUnitario: {
+            type: Number,
+            min: [0, 'El precio unitario debe ser positivo']
+        },
+        subtotal: {
+            type: Number,
+            default: function() {
+                return this.cantidad * this.precioUnitario;
+            }
+        }
+    }],
+    referencia: {
+        type: String,
+        unique: true,
+        sparse: true
     }
-}
+}, { 
+    timestamps: true 
+});
 
-module.exports = Transaccion;
+module.exports = mongoose.model('Transaccion', transaccionSchema);

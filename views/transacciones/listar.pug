@@ -31,7 +31,12 @@ block content
           td= transaccion.estado
           td= transaccion.referencia
           td
-            a.btn(href=`/transacciones/vista/${transaccion.id}`) Ver
+            a.btn(href=`/transacciones/ver/${transaccion.id}`) Ver
+            |  
+            a.btn(href=`/transacciones/editar/${transaccion.id}`) Editar
+            |  
+            form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="display:inline" onsubmit="return confirm('¿Está seguro de eliminar esta transacción?')")
+              button.btn(type="submit" style="background-color: #ff4444; color: white;") Eliminar
   else
     p No hay transacciones registradas.
     p

@@ -3,29 +3,39 @@ const router = express.Router();
 
 const {
     obtenerTransacciones,
+    obtenerTransaccionesVista,
     obtenerTransaccionPorId,
+    obtenerTransaccionVista,
     crearTransaccion,
-    formularioNuevaTransaccion,
     actualizarTransaccion,
     eliminarTransaccion,
-    obtenerTransaccionesPorUsuario,
-    obtenerTransaccionesPorTienda
+    procesarVenta,
+    reembolsarTransaccion,
+    formularioCrearTransaccion,
+    formularioEditarTransaccion,
+    actualizarTransaccionVista,
+    eliminarTransaccionVista
 } = require("../controllers/transaccionesController");
 
-// Rutas unificadas (detectan si es API o Vista)
-router.get("/", obtenerTransacciones);
-router.get("/crear", formularioNuevaTransaccion);
-router.get("/vista/:id", obtenerTransaccionPorId);
-router.post("/", crearTransaccion);
+// Rutas para Vistas
+router.get("/", obtenerTransaccionesVista); // Alias para la raíz
+router.get("/listar", obtenerTransaccionesVista);
+router.get("/crear", formularioCrearTransaccion);
+router.get("/ver/:id", obtenerTransaccionVista);
+router.get("/editar/:id", formularioEditarTransaccion);
 
 // Rutas para API
 router.get("/api", obtenerTransacciones);
 router.get("/api/:id", obtenerTransaccionPorId);
 router.post("/api", crearTransaccion);
 router.put("/api/:id", actualizarTransaccion);
-router.patch("/api/:id", actualizarTransaccion);
 router.delete("/api/:id", eliminarTransaccion);
-router.get("/api/usuario/:usuarioId", obtenerTransaccionesPorUsuario);
-router.get("/api/tienda/:tiendaId", obtenerTransaccionesPorTienda);
+
+// Rutas de Acción
+router.post("/guardar", crearTransaccion);
+router.post("/actualizar/:id", actualizarTransaccionVista);
+router.post("/eliminar/:id", eliminarTransaccionVista);
+router.post("/procesar/:id", procesarVenta);
+router.post("/reembolsar/:id", reembolsarTransaccion);
 
 module.exports = router;

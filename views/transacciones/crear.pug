@@ -3,11 +3,22 @@ extends ../layout
 block content
   h2 Nueva transacción
 
-  form(method="POST" action="/transacciones")
+  form(method="POST" action="/transacciones/guardar")
     p
-      label(for="usuarioId") ID Usuario:
+      label(for="usuarioId") Usuario:
       br
-      input(type="number" id="usuarioId" name="usuarioId" required)
+      select(id="usuarioId" name="usuarioId" required)
+        option(value="") -- Seleccionar Usuario --
+        each usuario in usuarios
+          option(value=usuario.id)= usuario.nombre
+
+    p
+      label(for="tiendaId") Tienda:
+      br
+      select(id="tiendaId" name="tiendaId" required)
+        option(value="") -- Seleccionar Tienda --
+        each tienda in tiendas
+          option(value=tienda._id)= tienda.nombre
 
     p
       label(for="monto") Monto ($):
@@ -22,15 +33,13 @@ block content
         option(value="tarjeta") Tarjeta de Crédito/Débito
         option(value="transferencia") Transferencia Bancaria
         option(value="efectivo") Efectivo
-        option(value="cheque") Cheque
+        option(value="paypal") PayPal
+        option(value="criptomoneda") Criptomoneda
 
     p
-      label(for="estado") Estado:
+      label(for="descripcion") Descripción:
       br
-      select(id="estado" name="estado")
-        option(value="pendiente" selected) Pendiente
-        option(value="completado") Completado
-        option(value="cancelado") Cancelado
+      textarea(id="descripcion" name="descripcion" rows="3" style="width: 100%")
 
     p
       label(for="referencia") Referencia/Factura:
@@ -38,11 +47,6 @@ block content
       input(type="text" id="referencia" name="referencia")
 
     p
-      label(for="tiendaId") ID Tienda (opcional):
-      br
-      input(type="number" id="tiendaId" name="tiendaId")
-
-    p
       button(type="submit" class="btn" style="width: 150px; padding: 8px 16px;") Guardar
       |  
-      button(type="button" class="btn" style="width: 150px; padding: 8px 16px; cursor: pointer;" onclick="window.location.href='/transacciones'") Cancelar
+      button(type="button" class="btn" style="width: 150px; padding: 8px 16px; cursor: pointer;" onclick="window.location.href='/transacciones/listar'") Cancelar

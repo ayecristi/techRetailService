@@ -1,0 +1,61 @@
+extends ../layout
+
+block content
+  h2 Editar transacción
+
+  form(method="POST" action=`/transacciones/actualizar/${transaccion._id}`)
+    p
+      label(for="usuarioId") Usuario:
+      br
+      select(id="usuarioId" name="usuarioId" required)
+        option(value="") -- Seleccionar Usuario --
+        each usuario in usuarios
+          option(value=usuario.id selected=(String(usuario.id) === String(transaccion.usuarioId)))= usuario.nombre
+
+    p
+      label(for="tiendaId") Tienda:
+      br
+      select(id="tiendaId" name="tiendaId" required)
+        option(value="") -- Seleccionar Tienda --
+        each tienda in tiendas
+          option(value=tienda._id selected=(String(tienda._id) === String(transaccion.tiendaId._id || transaccion.tiendaId)))= tienda.nombre
+
+    p
+      label(for="monto") Monto ($):
+      br
+      input(type="number" id="monto" name="monto" step="0.01" value=transaccion.monto required)
+
+    p
+      label(for="metodoPago") Método de Pago:
+      br
+      select(id="metodoPago" name="metodoPago" required)
+        option(value="") -- Seleccionar --
+        option(value="tarjeta" selected=(transaccion.metodoPago === 'tarjeta')) Tarjeta de Crédito/Débito
+        option(value="transferencia" selected=(transaccion.metodoPago === 'transferencia')) Transferencia Bancaria
+        option(value="efectivo" selected=(transaccion.metodoPago === 'efectivo')) Efectivo
+        option(value="paypal" selected=(transaccion.metodoPago === 'paypal')) PayPal
+        option(value="criptomoneda" selected=(transaccion.metodoPago === 'criptomoneda')) Criptomoneda
+
+    p
+      label(for="estado") Estado:
+      br
+      select(id="estado" name="estado" required)
+        option(value="pendiente" selected=(transaccion.estado === 'pendiente')) Pendiente
+        option(value="completado" selected=(transaccion.estado === 'completado')) Completado
+        option(value="cancelado" selected=(transaccion.estado === 'cancelado')) Cancelado
+        option(value="reembolsado" selected=(transaccion.estado === 'reembolsado')) Reembolsado
+
+    p
+      label(for="descripcion") Descripción:
+      br
+      textarea(id="descripcion" name="descripcion" rows="3" style="width: 100%")= transaccion.descripcion
+
+    p
+      label(for="referencia") Referencia/Factura:
+      br
+      input(type="text" id="referencia" name="referencia" value=transaccion.referencia)
+
+    p
+      button(type="submit" class="btn" style="width: 150px; padding: 8px 16px;") Guardar Cambios
+      |  
+      button(type="button" class="btn" style="width: 150px; padding: 8px 16px; cursor: pointer;" onclick="window.location.href='/transacciones/listar'") Cancelar
