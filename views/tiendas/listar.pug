@@ -1,0 +1,25 @@
+extends ../layout
+
+block content
+  h2 Lista de Tiendas
+
+  p
+    a.btn(href="/tiendas/crear") Nueva Tienda
+
+  if tiendas && tiendas.length > 0
+    table(border="1")
+      tr
+        th Nombre
+        th Categoría
+        th Email
+        th Estado
+      each tienda in tiendas
+        tr
+          td= tienda.nombre
+          td= tienda.categoria
+          td= tienda.email
+          td= tienda.activo ? 'Activa' : 'Inactiva'
+  else
+    p No hay tiendas registradas.
+    p
+      a.btn(href="/tiendas/crear") Crear la primera tienda
