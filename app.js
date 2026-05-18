@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/database");
 const errorHandler = require("./middlewares/errorHandler");
-const usuariosData = require("./data/usuarios.json");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +12,7 @@ connectDB();
 const usuariosRoutes = require("./routes/usuariosRoutes");
 const transaccionesRoutes = require("./routes/transaccionesRoutes");
 const tiendasRoutes = require("./routes/tiendasRoutes");
+const authRoutes = require('./routes/authRoutes');
 
 // Middlewares
 app.use(express.json({ limit: '10mb' }));
@@ -30,19 +30,10 @@ app.set('views', './views');
 app.use("/usuarios", usuariosRoutes);
 app.use("/transacciones", transaccionesRoutes);
 app.use("/tiendas", tiendasRoutes);
+app.use('/auth', authRoutes);
 
-app.get('/', async (req, res) => {
-    try {
-        const Transaccion = require('./models/Transaccion');
-        const transacciones = await Transaccion.find()
-            .sort({ creadoEn: -1 })
-            .limit(10);
-
-        res.render('index', { usuarios: usuariosData, transacciones });
-    } catch (error) {
-        console.error('Error cargando página principal:', error);
-        res.status(500).send('Error interno del servidor');
-    }
+app.get('/', (req, res) => {
+    res.redirect('/auth/login');
 });
 
 // Middleware de manejo de errores (debe ir al final)
