@@ -19,8 +19,8 @@ const usuarioSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        enum: ['admin', 'vendedor', 'cliente'],
-        default: 'cliente'
+        enum: ['admin', 'vendedor'],
+        default: 'admin'
     },
     activo: {
         type: String,
