@@ -4,21 +4,15 @@ const {
     obtenerTiendas,
     obtenerTiendaPorId,
     crearTienda,
-    obtenerTiendasVista,
-    formularioCrearTienda
+    obtenerDashboard
 } = require("../controllers/tiendasController");
 
-// Rutas para Vistas
-router.get("/", obtenerTiendasVista);
-router.get("/listar", obtenerTiendasVista);
-router.get("/crear", formularioCrearTienda);
+// Vista
+router.get("/", obtenerDashboard);
 
-// Rutas para API
+// API
 router.get("/api", obtenerTiendas);
 router.get("/api/:id", obtenerTiendaPorId);
 router.post("/api", crearTienda);
-
-// Rutas de Acción
-router.post("/guardar", crearTienda);
 
 module.exports = router;

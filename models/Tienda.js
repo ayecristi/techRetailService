@@ -6,6 +6,14 @@ const tiendaSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    cuit: {
+        type: String,
+        trim: true
+    },
+    whatsapp: {
+        type: String,
+        trim: true
+    },
     categoria: {
         type: String,
         trim: true
@@ -25,12 +33,10 @@ const tiendaSchema = new mongoose.Schema({
 });
 
 tiendaSchema.methods.crearProducto = async function(datosProducto) {
-    // La implementación dependerá del modelo Producto cuando esté disponible
     console.log(`Creando producto en tienda ${this.nombre}`);
 };
 
 tiendaSchema.methods.listarProductos = async function() {
-    // La implementación dependerá del modelo Producto cuando esté disponible
     console.log(`Listando productos de tienda ${this.nombre}`);
     return [];
 };

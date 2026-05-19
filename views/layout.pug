@@ -8,22 +8,20 @@ html(lang="es")
 
   body
     header
-      h1 TechRetail
+      div.brand
+        span.icon 🏪
+        h1 TechRetail
       nav
-        a(href="/") Inicio
-        |  |
-        a(href="/usuarios/listar") Usuarios
-        |  |
-        a(href="/transacciones") Transacciones
-        |  |
         a(href="/tiendas") Tiendas
+        a(href="/transacciones") Transacciones
+        a(href="/productos") Productos
+      div.actions
+        a.btn-white(href="/auth/login") Iniciar sesión
+        button.btn-menu ⋯
 
-    hr
-    
     main
       block content
 
-    hr
-
     footer
-      p Proyecto Node.js con JSON
+      div.scroll-down ↓
+      p TechRetail Solutions S.R.L. — Proyecto Backend 2025

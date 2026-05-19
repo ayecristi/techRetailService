@@ -1,27 +1,23 @@
 const Tienda = require("../models/Tienda");
+const Producto = require("../models/Producto");
 
 const obtenerTiendas = async (req, res) => {
     try {
         const tiendas = await Tienda.find();
         res.json(tiendas);
     } catch (error) {
-        console.error("Error obteniendo tiendas:", error);
         res.status(500).json({ mensaje: "Error interno del servidor" });
     }
 };
 
 const obtenerTiendaPorId = async (req, res) => {
     try {
-        const { id } = req.params;
-        const tienda = await Tienda.findById(id);
-
+        const tienda = await Tienda.findById(req.params.id);
         if (!tienda) {
             return res.status(404).json({ mensaje: "Tienda no encontrada" });
         }
-
         res.json(tienda);
     } catch (error) {
-        console.error("Error obteniendo tienda por ID:", error);
         res.status(500).json({ mensaje: "Error interno del servidor" });
     }
 };
@@ -31,11 +27,7 @@ const crearTienda = async (req, res) => {
         const { nombre, categoria, email, activo } = req.body;
 
         if (!nombre) {
-            if (req.originalUrl.includes('/api')) {
-                return res.status(400).json({ mensaje: "El nombre de la tienda es obligatorio" });
-            } else {
-                return res.status(400).send("El nombre de la tienda es obligatorio");
-            }
+            return res.status(400).json({ mensaje: "El nombre de la tienda es obligatorio" });
         }
 
         const nuevaTienda = new Tienda({
@@ -46,42 +38,32 @@ const crearTienda = async (req, res) => {
         });
 
         const tiendaGuardada = await nuevaTienda.save();
-        
-        if (req.originalUrl.includes('/api')) {
-            res.status(201).json(tiendaGuardada);
-        } else {
-            res.redirect('/tiendas');
-        }
+        res.status(201).json(tiendaGuardada);
     } catch (error) {
-        console.error("Error creando tienda:", error);
-        if (req.originalUrl.includes('/api')) {
-            res.status(500).json({ mensaje: "Error interno del servidor" });
-        } else {
-            res.status(500).send("Error interno del servidor: " + error.message);
-        }
+        res.status(500).json({ mensaje: "Error interno del servidor" });
     }
 };
 
-
-// VISTAS
-const obtenerTiendasVista = async (req, res) => {
+const obtenerDashboard = async (req, res) => {
     try {
-        const tiendas = await Tienda.find().sort({ createdAt: -1 });
-        res.render("tiendas/listar", { tiendas });
+        const tiendaId = req.session.usuario?.tiendaId;
+
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
+        const tienda = await Tienda.findById(tiendaId);
+        const productos = await Producto.find({ tiendaId });
+
+        res.render("tiendas/dashboard", { tienda, productos });
     } catch (error) {
-        console.error("Error obteniendo tiendas para vista:", error);
         res.status(500).send("Error interno del servidor");
     }
-};
-
-const formularioCrearTienda = (req, res) => {
-    res.render("tiendas/crear");
 };
 
 module.exports = {
     obtenerTiendas,
     obtenerTiendaPorId,
     crearTienda,
-    obtenerTiendasVista,
-    formularioCrearTienda
+    obtenerDashboard
 };

@@ -1,84 +1,132 @@
-extends ../layout
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Crear Tienda - TechRetail
+    link(rel="stylesheet", href="/styles.css")
 
-block content
-    h2 Registro
+  body
+    .split-wrapper
+      .split-left
+        .brand-logo
+          span.icon ☁️
+          span techretail
+        
+        h2 ¡Empecemos a crear tu tienda ahora mismo!
+        
+        .progress-container
+          .progress-bar#progressBar
 
-    p#error.error(style="display:none")
+      .split-right
+        .onboarding-form
+          p#error.error
+          
+          form#formWizard
+            #step1
+              .form-group
+                label(for="email") Email
+                input(type="email", id="email", required)
+              
+              .form-group
+                label(for="password") Contraseña
+                input(type="password", id="password", required)
 
-    form#formRegistro
+              .form-row
+                .form-group
+                  label(for="nombre") Nombre
+                  input(type="text", id="nombre", required)
+                
+                .form-group
+                  label(for="apellido") Apellido
+                  input(type="text", id="apellido", required)
 
-        label Nombre:
-        input(type="text", id="nombre", name="nombre")
+              button.btn-empezar.active.full(type="button", id="btnSiguiente") Siguiente ➔
+              
+              .auth-link-left
+                | ¿Ya tenés cuenta? 
+                a(href="/auth/login") Iniciar sesión
 
-        br
-        br
+            #step2
+              .form-group
+                label(for="cuit") CUIL (mayor de 18 años) o CUIT
+                input(type="text", id="cuit", required)
 
-        label Apellido:
-        input(type="text", id="apellido", name="apellido")
+              .form-group
+                label(for="marca") Nombre de tu marca
+                input(type="text", id="marca", required)
 
-        br
-        br
+              .form-group
+                label(for="whatsapp") WhatsApp
+                .input-group-phone
+                  select(id="codigoPais")
+                    option(value="+54") +54
+                  input(type="tel", id="whatsapp", placeholder="(11) 1234-5678", required)
 
-        label Teléfono:
-        input(type="text", id="telefono", name="telefono")
-
-        br
-        br
-
-        label Email:
-        input(type="email", id="email", name="email")
-
-        br
-        br
-
-        label Contraseña:
-        input(type="password", id="password", name="password")
-
-        br
-        br
-
-        label Rol:
-        select(id="rol", name="rol")
-            option(value="cliente") Cliente
-            option(value="vendedor") Vendedor
-            option(value="admin") Administrador
-
-        br
-        br
-
-        button.btn(type="submit") Registrarse
-
-        br
-        br
-
-        a(href="/auth/login") ¿Ya tenés cuenta? Iniciá sesión
+              .btn-row
+                button.btn-empezar(type="button", id="btnVolver") 🡐 Volver
+                button.btn-empezar.active(type="submit") Empezar ➔
 
     script.
-        document.getElementById('formRegistro').addEventListener('submit', async (e) => {
-            e.preventDefault();
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      const progressBar = document.getElementById('progressBar');
+      const btnSiguiente = document.getElementById('btnSiguiente');
+      const btnVolver = document.getElementById('btnVolver');
+      const formWizard = document.getElementById('formWizard');
 
-            const body = {
-                nombre: document.getElementById('nombre').value,
-                apellido: document.getElementById('apellido').value,
-                telefono: document.getElementById('telefono').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                rol: document.getElementById('rol').value
-            };
+      btnSiguiente.addEventListener('click', () => {
+        if(!document.getElementById('email').value || !document.getElementById('password').value || !document.getElementById('nombre').value || !document.getElementById('apellido').value) {
+            alert("Por favor completá los datos de la cuenta primero.");
+            return;
+        }
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+        progressBar.style.width = '100%';
+      });
 
-            const res = await fetch('/auth/registro', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
+      btnVolver.addEventListener('click', () => {
+        step2.style.display = 'none';
+        step1.style.display = 'block';
+        progressBar.style.width = '50%';
+      });
 
-            const data = await res.json();
+      formWizard.addEventListener('submit', async (e) => {
+          e.preventDefault();
 
-            if (res.ok) {
-                window.location.href = '/auth/login';
-            } else {
-                const errorEl = document.getElementById('error');
-                errorEl.textContent = data.mensaje;
-                errorEl.style.display = 'block';
-            }
-        });
+          const payload = {
+              usuario: {
+                  email: document.getElementById('email').value,
+                  password: document.getElementById('password').value
+              },
+              persona: {
+                  nombre: document.getElementById('nombre').value,
+                  apellido: document.getElementById('apellido').value
+              },
+              tienda: {
+                  nombre: document.getElementById('marca').value,
+                  cuit: document.getElementById('cuit').value,
+                  whatsapp: document.getElementById('codigoPais').value + " " + document.getElementById('whatsapp').value
+              }
+          };
+
+          const res = await fetch('/auth/registro', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+              window.location.href = '/tiendas'; 
+          } else {
+              const errorEl = document.getElementById('error');
+              errorEl.textContent = data.mensaje;
+              errorEl.style.display = 'block';
+              
+              step2.style.display = 'none';
+              step1.style.display = 'block';
+              progressBar.style.width = '50%';
+          }
+      });

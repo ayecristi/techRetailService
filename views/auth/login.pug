@@ -1,51 +1,47 @@
 extends ../layout
 
 block content
-    h2 Login
+  .login-card
+    h2 Bienvenido
+    p.subtitle Ingresá a tu cuenta para gestionar tu tienda
 
-    p#error.error(style="display:none")
+    p#error.error
 
     form#formLogin
+      .form-group
+        label(for="email") Email
+        input(type="email", name="email", id="email", placeholder="tu@email.com", required)
 
-        label Email:
-        input(type="email", name="email", id="email")
+      .form-group
+        label(for="password") Contraseña
+        input(type="password", name="password", id="password", placeholder="••••••••", required)
 
-        br
-        br
+      button.btn-submit(type="submit") Ingresar
 
-        label Contraseña:
-        input(type="password", name="password", id="password")
-
-        br
-        br
-
-        button.btn(type="submit") Ingresar
-
-        br
-        br
-
-        a(href="/auth/registro") ¿No tenés cuenta? Registrate
+      .auth-link
+        | ¿No tenés cuenta? 
+        a(href="/auth/registro") Registrate
 
     script.
-        document.getElementById('formLogin').addEventListener('submit', async (e) => {
-            e.preventDefault();
+      document.getElementById('formLogin').addEventListener('submit', async (e) => {
+          e.preventDefault();
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
 
-            const res = await fetch('/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+          const res = await fetch('/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+          });
 
-            const data = await res.json();
+          const data = await res.json();
 
-            if (res.ok) {
-                window.location.href = '/tiendas';
-            } else {
-                const errorEl = document.getElementById('error');
-                errorEl.textContent = data.mensaje;
-                errorEl.style.display = 'block';
-            }
-        });
+          if (res.ok) {
+              window.location.href = '/tiendas';
+          } else {
+              const errorEl = document.getElementById('error');
+              errorEl.textContent = data.mensaje;
+              errorEl.style.display = 'block';
+          }
+      });
