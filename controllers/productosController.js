@@ -39,10 +39,11 @@ const obtenerProductoPorId = async (req, res) => {
 // CREATE
 const crearProducto = async (req, res) => {
     try {
-        const { tiendaId, nombre, descripcion, precio, stock, categoria, imagenUrl } = req.body;
+        const { nombre, descripcion, precio, stock, categoria, imagenUrl } = req.body;
+        const tiendaId = req.body.tiendaId || req.session?.usuario?.tiendaId;
 
         if (!tiendaId || !nombre || precio === undefined) {
-            return res.status(400).json({ mensaje: 'Tienda, nombre y precio son obligatorios' });
+            return res.status(400).json({ mensaje: 'Nombre y precio son obligatorios' });
         }
 
         const nuevoProducto = new Producto({ tiendaId, nombre, descripcion, precio, stock, categoria, imagenUrl });

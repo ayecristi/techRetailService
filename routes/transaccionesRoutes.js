@@ -1,5 +1,7 @@
+// transaccionesRoutes.js
 const express = require("express");
 const router = express.Router();
+const { requireAuth } = require('../middlewares/auth');
 
 const {
     obtenerTransacciones,
@@ -17,25 +19,25 @@ const {
     eliminarTransaccionVista
 } = require("../controllers/transaccionesController");
 
-// Rutas para Vistas
-router.get("/", obtenerTransaccionesVista); // Alias para la raíz
-router.get("/listar", obtenerTransaccionesVista);
-router.get("/crear", formularioCrearTransaccion);
-router.get("/ver/:id", obtenerTransaccionVista);
-router.get("/editar/:id", formularioEditarTransaccion);
+// Vistas protegidas
+router.get("/", requireAuth, obtenerTransaccionesVista);
+router.get("/listar", requireAuth, obtenerTransaccionesVista);
+router.get("/crear", requireAuth, formularioCrearTransaccion);
+router.get("/ver/:id", requireAuth, obtenerTransaccionVista);
+router.get("/editar/:id", requireAuth, formularioEditarTransaccion);
 
-// Rutas para API
+// API libre
 router.get("/api", obtenerTransacciones);
 router.get("/api/:id", obtenerTransaccionPorId);
 router.post("/api", crearTransaccion);
 router.put("/api/:id", actualizarTransaccion);
 router.delete("/api/:id", eliminarTransaccion);
 
-// Rutas de Acción
-router.post("/guardar", crearTransaccion);
-router.post("/actualizar/:id", actualizarTransaccionVista);
-router.post("/eliminar/:id", eliminarTransaccionVista);
-router.post("/procesar/:id", procesarVenta);
-router.post("/reembolsar/:id", reembolsarTransaccion);
+// Acciones
+router.post("/guardar", requireAuth, crearTransaccion);
+router.post("/actualizar/:id", requireAuth, actualizarTransaccionVista);
+router.post("/eliminar/:id", requireAuth, eliminarTransaccionVista);
+router.post("/procesar/:id", requireAuth, procesarVenta);
+router.post("/reembolsar/:id", requireAuth, reembolsarTransaccion);
 
 module.exports = router;

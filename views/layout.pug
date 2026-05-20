@@ -9,15 +9,22 @@ html(lang="es")
   body
     header
       div.brand
-        span.icon 🏪
-        h1 TechRetail
+        a(href="/")
+          h1 TechRetail
       nav
-        a(href="/tiendas") Tiendas
-        a(href="/transacciones") Transacciones
-        a(href="/productos") Productos
+        if session && session.usuario
+          a(href="/tiendas") Mi tienda
+          a(href="/transacciones") Transacciones
+        else
+          a(href="/suscripciones") Planes
+          a(href="/") Contacto
       div.actions
-        a.btn-white(href="/auth/login") Iniciar sesión
-        button.btn-menu ⋯
+        if session && session.usuario
+          span.user-name Hola, #{session.usuario.nombre}
+          a.btn-white(href="/auth/logout") Cerrar sesión
+        else
+          a.btn-white(href="/auth/login") Iniciar sesión
+          a.btn-header-primary(href="/auth/registro") Crear tienda
 
     main
       block content

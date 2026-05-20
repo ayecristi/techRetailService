@@ -1,0 +1,66 @@
+extends ../layout
+
+block content
+  .dashboard-wrapper
+    .dashboard-header
+      div
+        h2 Nuevo Producto
+        p Agregá un producto a tu catálogo
+      a.btn-outline(href="/tiendas") Volver al dashboard
+
+    .login-card(style="max-width: 600px;")
+      p#error.error
+
+      form#formProducto
+
+        .form-group
+          label Nombre
+          input(type="text", id="nombre", placeholder="Ej: Remera básica", required)
+
+        .form-group
+          label Descripción
+          input(type="text", id="descripcion", placeholder="Descripción del producto")
+
+        .form-row
+          .form-group
+            label Precio
+            input(type="number", id="precio", placeholder="0.00", min="0", required)
+          
+          .form-group
+            label Stock
+            input(type="number", id="stock", placeholder="0", min="0")
+
+        .form-group
+          label Categoría
+          input(type="text", id="categoria", placeholder="Ej: Ropa, Electrónica...")
+
+        button.btn-submit(type="submit") Guardar producto
+
+  script.
+    document.getElementById('formProducto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const body = {
+            nombre: document.getElementById('nombre').value,
+            descripcion: document.getElementById('descripcion').value,
+            precio: parseFloat(document.getElementById('precio').value),
+            stock: parseInt(document.getElementById('stock').value) || 0,
+            categoria: document.getElementById('categoria').value
+        };
+
+        const res = await fetch('/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            window.location.href = '/tiendas';
+        } else {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = data.mensaje;
+            errorEl.style.display = 'block';
+        }
+    });

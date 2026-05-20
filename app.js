@@ -25,6 +25,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
 app.use(require('./middlewares/userLog'));
 
 // Archivos estáticos
