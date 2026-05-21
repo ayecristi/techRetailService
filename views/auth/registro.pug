@@ -24,6 +24,37 @@ html(lang="es")
           
           form#formWizard
             #step1
+              h3 Seleccioná tu Plan de Suscripción
+              p.step-subtitle Elegí el plan que mejor se adapte a tu escala actual. Podés cambiarlo en cualquier momento.
+              
+              .plans-selection-grid
+                each planKey in Object.keys(planes)
+                  - var plan = planes[planKey]
+                  .plan-select-card(data-plan=planKey, class=plan.destacado ? 'featured' : '')
+                    if plan.destacado
+                      .badge-popular-wizard Recomendado
+                    .plan-select-header
+                      h4= plan.nombre
+                      span.price= '$' + plan.precio.toLocaleString('es-AR') + '/mes'
+                    p.tagline= plan.tagline
+                    ul.features-list-mini
+                      each feat in plan.caracteristicas.slice(0, 3)
+                        li
+                          span.check ✓
+                          span= feat
+              
+              input(type="hidden", id="selectedPlanInput", value="basico")
+              
+              button.btn-empezar.active.full(type="button", id="btnSiguiente1") Siguiente ➔
+              
+              .auth-link-left
+                | ¿Ya tenés cuenta? 
+                a(href="/auth/login") Iniciar sesión
+
+            #step2(style="display: none;")
+              h3 Creá tu cuenta de administrador
+              p.step-subtitle Ingresá tus datos personales.
+
               .form-group
                 label(for="email") Email
                 input(type="email", id="email", required)
@@ -41,13 +72,14 @@ html(lang="es")
                   label(for="apellido") Apellido
                   input(type="text", id="apellido", required)
 
-              button.btn-empezar.active.full(type="button", id="btnSiguiente") Siguiente ➔
-              
-              .auth-link-left
-                | ¿Ya tenés cuenta? 
-                a(href="/auth/login") Iniciar sesión
+              .btn-row
+                button.btn-empezar(type="button", id="btnVolver1") 🡐 Volver
+                button.btn-empezar.active(type="button", id="btnSiguiente2") Siguiente ➔
 
-            #step2
+            #step3(style="display: none;")
+              h3 Datos de tu comercio
+              p.step-subtitle Registrá los datos comerciales de tu marca.
+
               .form-group
                 label(for="cuit") CUIL (mayor de 18 años) o CUIT
                 input(type="text", id="cuit", required)
@@ -64,33 +96,89 @@ html(lang="es")
                   input(type="tel", id="whatsapp", placeholder="(11) 1234-5678", required)
 
               .btn-row
-                button.btn-empezar(type="button", id="btnVolver") 🡐 Volver
-                button.btn-empezar.active(type="submit") Empezar ➔
+                button.btn-empezar(type="button", id="btnVolver2") 🡐 Volver
+                button.btn-empezar.active(type="submit") Crear tienda y suscribirse ➔
 
     script.
       const step1 = document.getElementById('step1');
       const step2 = document.getElementById('step2');
+      const step3 = document.getElementById('step3');
       const progressBar = document.getElementById('progressBar');
-      const btnSiguiente = document.getElementById('btnSiguiente');
-      const btnVolver = document.getElementById('btnVolver');
+      const btnSiguiente1 = document.getElementById('btnSiguiente1');
+      const btnVolver1 = document.getElementById('btnVolver1');
+      const btnSiguiente2 = document.getElementById('btnSiguiente2');
+      const btnVolver2 = document.getElementById('btnVolver2');
       const formWizard = document.getElementById('formWizard');
 
-      btnSiguiente.addEventListener('click', () => {
-        if(!document.getElementById('email').value || !document.getElementById('password').value || !document.getElementById('nombre').value || !document.getElementById('apellido').value) {
-            alert("Por favor completá los datos de la cuenta primero.");
-            return;
-        }
-        step1.style.display = 'none';
-        step2.style.display = 'block';
-        progressBar.style.width = '100%';
+      // Detect and preselect plan from URL query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const planParam = urlParams.get('plan');
+      
+      if (planParam && ['basico', 'profesional', 'enterprise'].includes(planParam.toLowerCase())) {
+          const targetPlan = planParam.toLowerCase();
+          document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
+          const card = document.querySelector(`.plan-select-card[data-plan="${targetPlan}"]`);
+          if (card) {
+              card.classList.add('selected');
+              document.getElementById('selectedPlanInput').value = targetPlan;
+              
+              // Skip step 1 and display step 2 directly
+              step1.style.display = 'none';
+              step2.style.display = 'block';
+              progressBar.style.width = '66%';
+          }
+      } else {
+          // Preselect basico by default in the UI
+          const basicoCard = document.querySelector(`.plan-select-card[data-plan="basico"]`);
+          if (basicoCard) {
+              basicoCard.classList.add('selected');
+          }
+          document.getElementById('selectedPlanInput').value = 'basico';
+          progressBar.style.width = '33%';
+      }
+
+      // Handle card selections
+      document.querySelectorAll('.plan-select-card').forEach(card => {
+          card.addEventListener('click', () => {
+              document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
+              card.classList.add('selected');
+              document.getElementById('selectedPlanInput').value = card.getAttribute('data-plan');
+          });
       });
 
-      btnVolver.addEventListener('click', () => {
-        step2.style.display = 'none';
-        step1.style.display = 'block';
-        progressBar.style.width = '50%';
+      // Navigation Step 1 -> Step 2
+      btnSiguiente1.addEventListener('click', () => {
+          step1.style.display = 'none';
+          step2.style.display = 'block';
+          progressBar.style.width = '66%';
       });
 
+      // Navigation Step 2 -> Step 1
+      btnVolver1.addEventListener('click', () => {
+          step2.style.display = 'none';
+          step1.style.display = 'block';
+          progressBar.style.width = '33%';
+      });
+
+      // Navigation Step 2 -> Step 3
+      btnSiguiente2.addEventListener('click', () => {
+          if(!document.getElementById('email').value || !document.getElementById('password').value || !document.getElementById('nombre').value || !document.getElementById('apellido').value) {
+              alert("Por favor completá los datos de la cuenta primero.");
+              return;
+          }
+          step2.style.display = 'none';
+          step3.style.display = 'block';
+          progressBar.style.width = '100%';
+      });
+
+      // Navigation Step 3 -> Step 2
+      btnVolver2.addEventListener('click', () => {
+          step3.style.display = 'none';
+          step2.style.display = 'block';
+          progressBar.style.width = '66%';
+      });
+
+      // Wizard submit
       formWizard.addEventListener('submit', async (e) => {
           e.preventDefault();
 
@@ -107,7 +195,8 @@ html(lang="es")
                   nombre: document.getElementById('marca').value,
                   cuit: document.getElementById('cuit').value,
                   whatsapp: document.getElementById('codigoPais').value + " " + document.getElementById('whatsapp').value
-              }
+              },
+              plan: document.getElementById('selectedPlanInput').value
           };
 
           const res = await fetch('/auth/registro', {
@@ -125,8 +214,8 @@ html(lang="es")
               errorEl.textContent = data.mensaje;
               errorEl.style.display = 'block';
               
-              step2.style.display = 'none';
-              step1.style.display = 'block';
-              progressBar.style.width = '50%';
+              step3.style.display = 'none';
+              step2.style.display = 'block';
+              progressBar.style.width = '66%';
           }
       });

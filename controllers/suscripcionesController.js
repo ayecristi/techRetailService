@@ -1,5 +1,5 @@
 const Suscripcion = require('../models/Suscripcion');
-const { PLANES_SUSCRIPCION, ESTADOS_SUSCRIPCION } = require('../constants/enums');
+const { PLANES_SUSCRIPCION, ESTADOS_SUSCRIPCION, DETALLES_PLANES } = require('../constants/enums');
 
 const PRECIOS_PLAN = {
     [PLANES_SUSCRIPCION.BASICO]: 5000,
@@ -7,9 +7,14 @@ const PRECIOS_PLAN = {
     [PLANES_SUSCRIPCION.ENTERPRISE]: 30000
 };
 
-// GET ALL
+// GET ALL / PLANES VIEW
 const obtenerSuscripciones = async (req, res) => {
     try {
+        // Si el cliente acepta HTML y no es una llamada AJAX/Fetch directa, renderizamos la vista de planes
+        if (req.accepts('html') && !req.xhr) {
+            return res.render('suscripciones/planes', { planes: DETALLES_PLANES });
+        }
+
         const suscripciones = await Suscripcion.find()
             .populate('tiendaId', 'nombre');
         res.json(suscripciones);

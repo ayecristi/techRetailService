@@ -1,23 +1,25 @@
 const Usuario = require('../models/Usuario');
 const Persona = require('../models/Persona');
 const Tienda = require('../models/Tienda');
+const Suscripcion = require('../models/Suscripcion');
+const { PLANES_SUSCRIPCION, ESTADOS_SUSCRIPCION, DETALLES_PLANES } = require('../constants/enums');
 
 const formularioRegistro = (req, res) => {
-    res.render('auth/registro');
+    res.render('auth/registro', { planes: DETALLES_PLANES });
 };
 
 const registrar = async (req, res) => {
     try {
-        const { usuario, persona, tienda } = req.body;
+        const { usuario, persona, tienda, plan } = req.body;
 
         if (!persona.nombre || !persona.apellido || !usuario.email || !usuario.password || !tienda.nombre) {
             return res.status(400).json({ mensaje: 'Faltan datos obligatorios' });
         }
 
-        const nuevaPersona = new Persona({ 
-            nombre: persona.nombre, 
-            apellido: persona.apellido, 
-            email: usuario.email 
+        const nuevaPersona = new Persona({
+            nombre: persona.nombre,
+            apellido: persona.apellido,
+            email: usuario.email
         });
         await nuevaPersona.save();
 
@@ -29,13 +31,25 @@ const registrar = async (req, res) => {
         await nuevaTienda.save();
 
         const nuevoUsuario = new Usuario({
-            email: usuario.email, 
-            password: usuario.password, 
-            rol: 'admin', 
+            email: usuario.email,
+            password: usuario.password,
+            rol: 'admin',
             personaId: nuevaPersona._id,
             tiendaId: nuevaTienda._id
         });
         await nuevoUsuario.save();
+
+        const planSeleccionado = plan || PLANES_SUSCRIPCION.BASICO;
+        const detallesPlan = DETALLES_PLANES[planSeleccionado] || DETALLES_PLANES[PLANES_SUSCRIPCION.BASICO];
+        const precioMensual = detallesPlan.precio;
+
+        const nuevaSuscripcion = new Suscripcion({
+            tiendaId: nuevaTienda._id,
+            plan: planSeleccionado,
+            precioMensual,
+            estado: ESTADOS_SUSCRIPCION.ACTIVO
+        });
+        await nuevaSuscripcion.save();
 
         // Guardar sesión
         req.session.usuario = {
@@ -46,7 +60,7 @@ const registrar = async (req, res) => {
             nombre: nuevaPersona.nombre
         };
 
-        res.status(201).json({ mensaje: 'Cuenta y tienda registradas exitosamente' });
+        res.status(201).json({ mensaje: 'Cuenta, tienda y suscripción registradas exitosamente' });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(409).json({ mensaje: 'Ya existe un usuario con ese email' });
