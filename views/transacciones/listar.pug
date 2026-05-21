@@ -1,43 +1,62 @@
 extends ../layout
 
 block content
-  h2 Lista de transacciones
+  .dashboard-wrapper
+    .dashboard-header
+      div
+        h2 Control de Transacciones
+        p Historial completo de ventas y movimientos registrados para tu comercio.
+      a.btn-primary(href="/transacciones/crear") + Nueva Transacción
 
-  p
-    <!-- boton exclusivo para pruebas -->
-    a.btn(href="/transacciones/crear") Nueva transacción 
+    if transacciones && transacciones.length > 0
+      table
+        thead
+          tr
+            th ID
+            th Usuario ID
+            th Fecha
+            th Referencia
+            th Método de Pago
+            th Estado
+            th Monto
+            th.text-right Acciones
 
-  if transacciones && transacciones.length > 0
-    table(border="1")
-      tr
-        th ID
-        th Tienda ID
-        th Usuario ID
-        th Fecha
-        th Monto
-        th Método de Pago
-        th Estado
-        th Referencia
-        th Acciones
-
-      each transaccion in transacciones
-        tr
-          td= transaccion.id
-          td= transaccion.tiendaId
-          td= transaccion.usuarioId
-          td= new Date(transaccion.creadoEn).toLocaleDateString('es-AR')
-          td $#{transaccion.monto.toFixed(2)}
-          td= transaccion.metodoPago
-          td= transaccion.estado
-          td= transaccion.referencia
-          td
-            a.btn(href=`/transacciones/ver/${transaccion.id}`) Ver
-            |  
-            a.btn(href=`/transacciones/editar/${transaccion.id}`) Editar
-            |  
-            form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="display:inline" onsubmit="return confirm('¿Está seguro de eliminar esta transacción?')")
-              button.btn(type="submit" style="background-color: #ff4444; color: white;") Eliminar
-  else
-    p No hay transacciones registradas.
-    p
-      a.btn(href="/transacciones/crear") Crear la primera transacción
+        tbody
+          each transaccion in transacciones
+            tr
+              td
+                span(style="color: var(--primary); font-weight: 600;")= transaccion.id.toString().slice(-6).toUpperCase()
+              td
+                span(style="color: var(--text-muted);")= transaccion.usuarioId
+              td= new Date(transaccion.creadoEn || transaccion.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+              td
+                if transaccion.referencia
+                  span.badge-ref(style="background-color: #3b82f620; color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 12px;")= transaccion.referencia
+                else
+                  span(style="color: var(--text-muted);") -
+              td
+                span(style="text-transform: capitalize;")= transaccion.metodoPago
+              td
+                - var est = transaccion.estado.toLowerCase()
+                if est === 'completado'
+                  span(style="color: #10b981; font-weight: 600;") Completado
+                else if est === 'pendiente'
+                  span(style="color: #f59e0b; font-weight: 600;") Pendiente
+                else if est === 'cancelado'
+                  span(style="color: #ef4444; font-weight: 600;") Cancelado
+                else
+                  span(style="color: var(--text-muted);")= transaccion.estado
+              td
+                strong(style="color: #f8fafc;") $#{transaccion.monto.toFixed(2)}
+              td(style="text-align: right;")
+                .btn-row(style="display: inline-flex; gap: 8px; justify-content: flex-end;")
+                  a.btn-outline(href=`/transacciones/ver/${transaccion.id}` style="padding: 6px 12px; font-size: 12px;") Ver
+                  a.btn-outline(href=`/transacciones/editar/${transaccion.id}` style="padding: 6px 12px; font-size: 12px; border-color: #f59e0b40; color: #f59e0b;") Editar
+                  form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar esta transacción?')")
+                    button.btn-outline(type="submit" style="padding: 6px 12px; font-size: 12px; border-color: #ef444440; color: #ef4444; background: transparent; cursor: pointer;") Eliminar
+    else
+      .empty-state
+        span 💸
+        h4 Sin transacciones registradas
+        p Registrá una venta o simulá un movimiento para empezar a ver el historial y estadísticas financieras en tu panel.
+        a.btn-outline(href="/transacciones/crear") Crear la primera transacción

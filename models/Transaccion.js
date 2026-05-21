@@ -7,10 +7,9 @@ const transaccionSchema = new mongoose.Schema({
         required: [true, 'El ID de la tienda es obligatorio']
     },
     usuarioId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: [true, 'El ID del usuario es obligatorio']
-},
+        type: String,
+        required: [true, 'El ID del usuario es obligatorio']
+    },
     monto: {
         type: Number,
         required: [true, 'El monto es obligatorio'],

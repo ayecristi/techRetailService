@@ -46,7 +46,12 @@ const obtenerTransacciones = async (req, res) => {
 // GET ALL - Vista
 const obtenerTransaccionesVista = async (req, res) => {
     try {
-        const transacciones = await Transaccion.find()
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
+        const transacciones = await Transaccion.find({ tiendaId })
             .populate('tiendaId', 'nombre')
             .sort({ createdAt: -1 })
             .limit(100);
@@ -91,6 +96,11 @@ const obtenerTransaccionPorId = async (req, res) => {
 // GET BY ID - Vista
 const obtenerTransaccionVista = async (req, res) => {
     try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
         const { id } = req.params;
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -108,7 +118,17 @@ const obtenerTransaccionVista = async (req, res) => {
             });
         }
 
-        res.render("transacciones/ver", { transaccion });
+        // Seguridad: Verificar pertenencia
+        if (String(transaccion.tiendaId._id || transaccion.tiendaId) !== String(tiendaId)) {
+            return res.status(403).render("transacciones/ver", {
+                error: "Acceso denegado: esta transacción no pertenece a tu tienda"
+            });
+        }
+
+        const usuarios = leerUsuarios();
+        const usuario = usuarios.find(u => String(u.id) === String(transaccion.usuarioId));
+
+        res.render("transacciones/ver", { transaccion, usuario });
     } catch (error) {
         console.error('Error obteniendo transacción para vista:', error);
         res.status(500).render("transacciones/ver", {
@@ -353,9 +373,14 @@ const reembolsarTransaccion = async (req, res) => {
 // VISTAS
 const formularioCrearTransaccion = async (req, res) => {
     try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
+        const tienda = await Tienda.findById(tiendaId);
         const usuarios = leerUsuarios();
-        const tiendas = await Tienda.find().select('nombre');
-        res.render("transacciones/crear", { usuarios, tiendas });
+        res.render("transacciones/crear", { usuarios, tienda });
     } catch (error) {
         console.error('Error obteniendo datos para crear transacción:', error);
         res.status(500).send("Error interno del servidor");
@@ -364,6 +389,11 @@ const formularioCrearTransaccion = async (req, res) => {
 
 const formularioEditarTransaccion = async (req, res) => {
     try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
         const { id } = req.params;
         const transaccion = await Transaccion.findById(id);
         
@@ -371,9 +401,14 @@ const formularioEditarTransaccion = async (req, res) => {
             return res.status(404).send("Transacción no encontrada");
         }
 
+        // Seguridad: Verificar pertenencia
+        if (String(transaccion.tiendaId) !== String(tiendaId)) {
+            return res.status(403).send("Acceso denegado: esta transacción no pertenece a tu tienda");
+        }
+
+        const tienda = await Tienda.findById(tiendaId);
         const usuarios = leerUsuarios();
-        const tiendas = await Tienda.find().select('nombre');
-        res.render("transacciones/editar", { transaccion, usuarios, tiendas });
+        res.render("transacciones/editar", { transaccion, usuarios, tienda });
     } catch (error) {
         console.error('Error obteniendo datos para editar transacción:', error);
         res.status(500).send("Error interno del servidor");
@@ -382,13 +417,28 @@ const formularioEditarTransaccion = async (req, res) => {
 
 const actualizarTransaccionVista = async (req, res) => {
     try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
+
         const { id } = req.params;
-        const { tiendaId, usuarioId, monto, metodoPago, estado, descripcion, referencia } = req.body;
+        const transaccionExistente = await Transaccion.findById(id);
+
+        if (!transaccionExistente) {
+            return res.status(404).send("Transacción no encontrada");
+        }
+
+        // Seguridad: Verificar pertenencia
+        if (String(transaccionExistente.tiendaId) !== String(tiendaId)) {
+            return res.status(403).send("Acceso denegado: esta transacción no pertenece a tu tienda");
+        }
+
+        const { usuarioId, monto, metodoPago, estado, descripcion, referencia } = req.body;
 
         const transaccion = await Transaccion.findByIdAndUpdate(
             id,
             { 
-                tiendaId, 
                 usuarioId, 
                 monto: parseFloat(monto), 
                 metodoPago, 
@@ -412,12 +462,24 @@ const actualizarTransaccionVista = async (req, res) => {
 
 const eliminarTransaccionVista = async (req, res) => {
     try {
-        const { id } = req.params;
-        const transaccionEliminada = await Transaccion.findByIdAndDelete(id);
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) {
+            return res.redirect('/auth/login');
+        }
 
-        if (!transaccionEliminada) {
+        const { id } = req.params;
+        const transaccionExistente = await Transaccion.findById(id);
+
+        if (!transaccionExistente) {
             return res.status(404).send("Transacción no encontrada");
         }
+
+        // Seguridad: Verificar pertenencia
+        if (String(transaccionExistente.tiendaId) !== String(tiendaId)) {
+            return res.status(403).send("Acceso denegado: esta transacción no pertenece a tu tienda");
+        }
+
+        await Transaccion.findByIdAndDelete(id);
 
         res.redirect('/transacciones/listar');
     } catch (error) {

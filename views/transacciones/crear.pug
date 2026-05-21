@@ -1,52 +1,48 @@
 extends ../layout
 
 block content
-  h2 Nueva transacción
+  .login-card(style="max-width: 500px; margin: 40px auto;")
+    h2 Nueva Transacción
+    p.subtitle Registrá una venta o movimiento para tu comercio de forma directa.
 
-  form(method="POST" action="/transacciones/guardar")
-    p
-      label(for="usuarioId") Usuario:
-      br
-      select(id="usuarioId" name="usuarioId" required)
-        option(value="") -- Seleccionar Usuario --
-        each usuario in usuarios
-          option(value=usuario.id)= usuario.nombre
+    form(method="POST" action="/transacciones/guardar")
+      // Tienda Oculta y Estática
+      input(type="hidden" name="tiendaId" value=tienda._id)
+      
+      .form-group
+        label Tienda
+        input(type="text" value=tienda.nombre disabled style="background-color: #1a1a1a; border-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; opacity: 0.8;")
 
-    p
-      label(for="tiendaId") Tienda:
-      br
-      select(id="tiendaId" name="tiendaId" required)
-        option(value="") -- Seleccionar Tienda --
-        each tienda in tiendas
-          option(value=tienda._id)= tienda.nombre
+      .form-group
+        label(for="usuarioId") Cliente / Usuario
+        select(id="usuarioId" name="usuarioId" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+          option(value="") -- Seleccionar Usuario --
+          each usuario in usuarios
+            option(value=usuario.id)= usuario.nombre
 
-    p
-      label(for="monto") Monto ($):
-      br
-      input(type="number" id="monto" name="monto" step="0.01" required)
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="monto") Monto ($)
+          input(type="number" id="monto" name="monto" step="0.01" placeholder="0.00" required style="width: 100%;")
 
-    p
-      label(for="metodoPago") Método de Pago:
-      br
-      select(id="metodoPago" name="metodoPago" required)
-        option(value="") -- Seleccionar --
-        option(value="tarjeta") Tarjeta de Crédito/Débito
-        option(value="transferencia") Transferencia Bancaria
-        option(value="efectivo") Efectivo
-        option(value="paypal") PayPal
-        option(value="criptomoneda") Criptomoneda
+        .form-group(style="flex: 1;")
+          label(for="metodoPago") Método de Pago
+          select(id="metodoPago" name="metodoPago" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+            option(value="") -- Seleccionar --
+            option(value="tarjeta") Tarjeta de Crédito/Débito
+            option(value="transferencia") Transferencia Bancaria
+            option(value="efectivo") Efectivo
+            option(value="paypal") PayPal
+            option(value="criptomoneda") Criptomoneda
 
-    p
-      label(for="descripcion") Descripción:
-      br
-      textarea(id="descripcion" name="descripcion" rows="3" style="width: 100%")
+      .form-group
+        label(for="referencia") Referencia / Factura
+        input(type="text" id="referencia" name="referencia" placeholder="Ej: FAC-0001" style="width: 100%;")
 
-    p
-      label(for="referencia") Referencia/Factura:
-      br
-      input(type="text" id="referencia" name="referencia")
+      .form-group
+        label(for="descripcion") Descripción / Notas
+        textarea(id="descripcion" name="descripcion" rows="3" placeholder="Detalles de la compra..." style="width: 100%; background-color: #171717; color: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;")
 
-    p
-      button(type="submit" class="btn" style="width: 150px; padding: 8px 16px;") Guardar
-      |  
-      button(type="button" class="btn" style="width: 150px; padding: 8px 16px; cursor: pointer;" onclick="window.location.href='/transacciones/listar'") Cancelar
+      .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
+        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Registrar Venta
+        a.btn-outline(href="/transacciones/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar
