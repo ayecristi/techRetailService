@@ -8,20 +8,27 @@ html(lang="es")
 
   body
     header
-      h1 TechRetail
+      div.brand
+        a(href="/")
+          h1 TechRetail
       nav
-        a(href="/") Inicio
-        |  |
-        a(href="/usuarios/listar") Usuarios
-        |  |
-        a(href="/transacciones") Transacciones
+        if session && session.usuario
+          a(href="/tiendas") Mi tienda
+          a(href="/transacciones") Transacciones
+        else
+          a(href="/suscripciones") Planes
+          a(href="/") Contacto
+      div.actions
+        if session && session.usuario
+          span.user-name Hola, #{session.usuario.nombre}
+          a.btn-white(href="/auth/logout") Cerrar sesión
+        else
+          a.btn-white(href="/auth/login") Iniciar sesión
+          a.btn-header-primary(href="/auth/registro") Crear tienda
 
-    hr
-    
     main
       block content
 
-    hr
-
     footer
-      p Proyecto Node.js con JSON
+      div.scroll-down ↓
+      p TechRetail Solutions S.R.L. — Proyecto Backend 2025

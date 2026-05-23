@@ -1,0 +1,32 @@
+extends ../layout
+
+block content
+  .pricing-container
+    .pricing-header
+      h2 Encontrá el plan ideal para tu negocio
+      p.subtitle Elegí la escala que necesitás hoy y hacé crecer tu marca a tu propio ritmo. Sin contratos a largo plazo.
+
+    .pricing-grid
+      each planKey in Object.keys(planes)
+        - var plan = planes[planKey]
+        .pricing-card(class=plan.destacado ? 'featured' : '')
+          if plan.destacado
+            .badge-popular Recomendado
+          
+          .card-header
+            h3= plan.nombre
+            p.tagline= plan.tagline
+          
+          .card-price
+            span.currency $
+            span.amount= plan.precio.toLocaleString('es-AR')
+            span.period / mes
+          
+          ul.features-list
+            each feature in plan.caracteristicas
+              li
+                span.check-icon ✓
+                span= feature
+          
+          .card-action
+            a.btn-plan(href=`/auth/registro?plan=${planKey}`, class=plan.destacado ? 'btn-featured' : 'btn-outline-plan') Elegir Plan

@@ -1,0 +1,56 @@
+extends ../layout
+
+block content
+  .login-card(style="max-width: 500px; margin: 40px auto;")
+    h2 Editar Transacción
+    p.subtitle Modificá los datos registrados de este movimiento.
+
+    form(method="POST" action=`/transacciones/actualizar/${transaccion._id}`)
+      // Tienda Oculta y Estática
+      input(type="hidden" name="tiendaId" value=tienda._id)
+      
+      .form-group
+        label Tienda
+        input(type="text" value=tienda.nombre disabled style="background-color: #1a1a1a; border-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; opacity: 0.8;")
+
+      .form-group
+        label(for="usuarioId") Cliente / Usuario
+        select(id="usuarioId" name="usuarioId" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+          option(value="") -- Seleccionar Usuario --
+          each usuario in usuarios
+            option(value=usuario.id selected=(String(usuario.id) === String(transaccion.usuarioId)))= usuario.nombre
+
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="monto") Monto ($)
+          input(type="number" id="monto" name="monto" step="0.01" value=transaccion.monto required style="width: 100%;")
+
+        .form-group(style="flex: 1;")
+          label(for="metodoPago") Método de Pago
+          select(id="metodoPago" name="metodoPago" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+            option(value="") -- Seleccionar --
+            option(value="tarjeta" selected=(transaccion.metodoPago === 'tarjeta')) Tarjeta de Crédito/Débito
+            option(value="transferencia" selected=(transaccion.metodoPago === 'transferencia')) Transferencia Bancaria
+            option(value="efectivo" selected=(transaccion.metodoPago === 'efectivo')) Efectivo
+            option(value="paypal" selected=(transaccion.metodoPago === 'paypal')) PayPal
+            option(value="criptomoneda" selected=(transaccion.metodoPago === 'criptomoneda')) Criptomoneda
+
+      .form-group
+        label(for="estado") Estado de Transacción
+        select(id="estado" name="estado" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+          option(value="pendiente" selected=(transaccion.estado === 'pendiente')) Pendiente
+          option(value="completado" selected=(transaccion.estado === 'completado')) Completado
+          option(value="cancelado" selected=(transaccion.estado === 'cancelado')) Cancelado
+          option(value="reembolsado" selected=(transaccion.estado === 'reembolsado')) Reembolsado
+
+      .form-group
+        label(for="referencia") Referencia / Factura
+        input(type="text" id="referencia" name="referencia" value=transaccion.referencia placeholder="Ej: FAC-0001" style="width: 100%;")
+
+      .form-group
+        label(for="descripcion") Descripción / Notas
+        textarea(id="descripcion" name="descripcion" rows="3" placeholder="Detalles de la compra..." style="width: 100%; background-color: #171717; color: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;")= transaccion.descripcion
+
+      .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
+        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Guardar Cambios
+        a.btn-outline(href="/transacciones/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar

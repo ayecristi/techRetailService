@@ -1,31 +1,43 @@
+// transaccionesRoutes.js
 const express = require("express");
 const router = express.Router();
+const { requireAuth } = require('../middlewares/auth');
 
 const {
     obtenerTransacciones,
+    obtenerTransaccionesVista,
     obtenerTransaccionPorId,
+    obtenerTransaccionVista,
     crearTransaccion,
-    formularioNuevaTransaccion,
     actualizarTransaccion,
     eliminarTransaccion,
-    obtenerTransaccionesPorUsuario,
-    obtenerTransaccionesPorTienda
+    procesarVenta,
+    reembolsarTransaccion,
+    formularioCrearTransaccion,
+    formularioEditarTransaccion,
+    actualizarTransaccionVista,
+    eliminarTransaccionVista
 } = require("../controllers/transaccionesController");
 
-// Rutas unificadas (detectan si es API o Vista)
-router.get("/", obtenerTransacciones);
-router.get("/crear", formularioNuevaTransaccion);
-router.get("/vista/:id", obtenerTransaccionPorId);
-router.post("/", crearTransaccion);
+// Vistas protegidas
+router.get("/", requireAuth, obtenerTransaccionesVista);
+router.get("/listar", requireAuth, obtenerTransaccionesVista);
+router.get("/crear", requireAuth, formularioCrearTransaccion);
+router.get("/ver/:id", requireAuth, obtenerTransaccionVista);
+router.get("/editar/:id", requireAuth, formularioEditarTransaccion);
 
-// Rutas para API
+// API libre
 router.get("/api", obtenerTransacciones);
 router.get("/api/:id", obtenerTransaccionPorId);
 router.post("/api", crearTransaccion);
 router.put("/api/:id", actualizarTransaccion);
-router.patch("/api/:id", actualizarTransaccion);
 router.delete("/api/:id", eliminarTransaccion);
-router.get("/api/usuario/:usuarioId", obtenerTransaccionesPorUsuario);
-router.get("/api/tienda/:tiendaId", obtenerTransaccionesPorTienda);
+
+// Acciones
+router.post("/guardar", requireAuth, crearTransaccion);
+router.post("/actualizar/:id", requireAuth, actualizarTransaccionVista);
+router.post("/eliminar/:id", requireAuth, eliminarTransaccionVista);
+router.post("/procesar/:id", requireAuth, procesarVenta);
+router.post("/reembolsar/:id", requireAuth, reembolsarTransaccion);
 
 module.exports = router;

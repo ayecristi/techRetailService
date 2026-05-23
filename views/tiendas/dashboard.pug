@@ -1,0 +1,47 @@
+extends ../layout
+
+block content
+  .dashboard-wrapper
+    
+    .dashboard-header
+      div
+        h2 Panel de Control
+        p Gestioná el stock, las ventas y la configuración de tu comercio
+      a.btn-primary(href="/productos/nuevo") + Nuevo Producto
+
+    .dashboard-grid
+      .card
+        p Ventas totales
+        h3 $0,00
+      
+      .card.card-green
+        p Productos en catálogo
+        h3= productos.length
+      
+      .card.card-amber
+        p Órdenes nuevas
+        h3 0
+
+    if productos.length === 0
+      .empty-state
+        span 📦
+        h4 Tu tienda está lista, pero falta tu catálogo
+        p Creá tu primer producto para empezar a registrar transacciones y gestionar el stock de tu marca en la plataforma.
+        a.btn-outline(href="/productos/nuevo") Cargar primer producto
+    else
+      table
+        thead
+          tr
+            th Nombre
+            th Categoría
+            th Precio
+            th Stock
+            th Estado
+        tbody
+          each producto in productos
+            tr
+              td= producto.nombre
+              td= producto.categoria || '-'
+              td= '$' + producto.precio
+              td= producto.stock
+              td= producto.activo ? 'Activo' : 'Inactivo'
