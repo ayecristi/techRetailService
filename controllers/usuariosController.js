@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 const Persona = require('../models/Persona');
 
@@ -67,8 +68,9 @@ const crearUsuario = async (req, res) => {
         await nuevaPersona.save();
 
         // Crear Usuario vinculado a la Persona
+        const passwordHasheada = await bcrypt.hash(password, 10);
         const nuevoUsuario = new Usuario({
-            emailLogin, emailRecuperacion, password, rol, tiendaId,
+            emailLogin, emailRecuperacion, password: passwordHasheada, rol, tiendaId,
             personaId: nuevaPersona._id
         });
         await nuevoUsuario.save();
@@ -120,9 +122,14 @@ const actualizarUsuario = async (req, res) => {
         );
 
         // Actualizar Usuario
+        const datosActualizar = { emailLogin, emailRecuperacion, rol, activo, tiendaId };
+        if (password) {
+            datosActualizar.password = await bcrypt.hash(password, 10);
+        }
+
         const usuarioActualizado = await Usuario.findByIdAndUpdate(
             req.params.id,
-            { emailLogin, emailRecuperacion, password, rol, activo, tiendaId },
+            datosActualizar,
             { new: true, runValidators: true }
         ).populate('personaId');
 

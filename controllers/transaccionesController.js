@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const Transaccion = require("../models/Transaccion");
 const Tienda = require("../models/Tienda");
+const { notificarNuevaTransaccion, notificarCambioEstado } = require('../config/socket');
 const rutaUsuarios = path.join(__dirname, "../data/usuarios.json");
 
 const leerUsuarios = () => {
@@ -197,6 +198,9 @@ const crearTransaccion = async (req, res) => {
 
         const transaccionGuardada = await nuevaTransaccion.save();
 
+        // Notificar en tiempo real a la tienda
+        notificarNuevaTransaccion(tiendaId, transaccionGuardada);
+
         if (req.originalUrl.includes('/api')) {
             return res.status(201).json({
                 mensaje: 'Transacción creada exitosamente',
@@ -331,6 +335,9 @@ const procesarVenta = async (req, res) => {
         const resultado = transaccion.procesarVenta();
         await transaccion.save();
 
+        // Notificar cambio de estado en tiempo real
+        notificarCambioEstado(transaccion.tiendaId, transaccion);
+
         res.json(resultado);
     } catch (error) {
         console.error('Error procesando venta:', error);
@@ -358,6 +365,8 @@ const reembolsarTransaccion = async (req, res) => {
         const resultado = transaccion.reembolsar();
         if (resultado.exito) {
             await transaccion.save();
+            // Notificar reembolso en tiempo real
+            notificarCambioEstado(transaccion.tiendaId, transaccion);
         }
 
         res.json(resultado);

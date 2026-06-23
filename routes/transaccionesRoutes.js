@@ -1,7 +1,7 @@
 // transaccionesRoutes.js
 const express = require("express");
 const router = express.Router();
-const { requireAuth } = require('../middlewares/auth');
+const { requireAuth, verificarJWT, verificarJWTAdmin } = require('../middlewares/auth');
 
 const {
     obtenerTransacciones,
@@ -26,12 +26,12 @@ router.get("/crear", requireAuth, formularioCrearTransaccion);
 router.get("/ver/:id", requireAuth, obtenerTransaccionVista);
 router.get("/editar/:id", requireAuth, formularioEditarTransaccion);
 
-// API libre
-router.get("/api", obtenerTransacciones);
-router.get("/api/:id", obtenerTransaccionPorId);
-router.post("/api", crearTransaccion);
-router.put("/api/:id", actualizarTransaccion);
-router.delete("/api/:id", eliminarTransaccion);
+// API protegida con JWT
+router.get("/api", verificarJWT, obtenerTransacciones);
+router.get("/api/:id", verificarJWT, obtenerTransaccionPorId);
+router.post("/api", verificarJWT, crearTransaccion);
+router.put("/api/:id", verificarJWTAdmin, actualizarTransaccion);
+router.delete("/api/:id", verificarJWTAdmin, eliminarTransaccion);
 
 // Acciones
 router.post("/guardar", requireAuth, crearTransaccion);

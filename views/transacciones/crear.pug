@@ -5,8 +5,7 @@ block content
     h2 Nueva Transacción
     p.subtitle Registrá una venta o movimiento para tu comercio de forma directa.
 
-    form(method="POST" action="/transacciones/guardar")
-      // Tienda Oculta y Estática
+    form#form-transaccion(method="POST" action="/transacciones/guardar")
       input(type="hidden" name="tiendaId" value=tienda._id)
       
       .form-group
@@ -44,5 +43,41 @@ block content
         textarea(id="descripcion" name="descripcion" rows="3" placeholder="Detalles de la compra..." style="width: 100%; background-color: #171717; color: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;")
 
       .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
-        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Registrar Venta
+        button#btn-submit.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Registrar Venta
         a.btn-outline(href="/transacciones/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar
+
+    script.
+      const form = document.getElementById('form-transaccion');
+      const btn = document.getElementById('btn-submit');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        const datos = new URLSearchParams(new FormData(form));
+
+        try {
+          const res = await fetch('/transacciones/guardar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: datos
+          });
+
+          if (res.ok || res.redirected) {
+            // Esperar 2.5 segundos para que se vea el toast antes de redirigir
+            setTimeout(() => {
+              window.location.href = '/transacciones/listar';
+            }, 2500);
+          } else {
+            btn.disabled = false;
+            btn.textContent = 'Registrar Venta';
+            alert('Error al guardar la transacción');
+          }
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Registrar Venta';
+          alert('Error de conexión');
+        }
+      });

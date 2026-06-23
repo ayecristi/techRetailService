@@ -1,8 +1,23 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 const Persona = require('../models/Persona');
 const Tienda = require('../models/Tienda');
 const Suscripcion = require('../models/Suscripcion');
 const { PLANES_SUSCRIPCION, ESTADOS_SUSCRIPCION, DETALLES_PLANES } = require('../constants/enums');
+
+const generarToken = (usuario) => {
+    return jwt.sign(
+        {
+            id: usuario._id,
+            email: usuario.email,
+            rol: usuario.rol,
+            tiendaId: usuario.tiendaId
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+};
 
 const formularioRegistro = (req, res) => {
     res.render('auth/registro', { planes: DETALLES_PLANES });
@@ -30,9 +45,12 @@ const registrar = async (req, res) => {
         });
         await nuevaTienda.save();
 
+        // Hashear la contraseña antes de guardar
+        const passwordHasheada = await bcrypt.hash(usuario.password, 10);
+
         const nuevoUsuario = new Usuario({
             email: usuario.email,
-            password: usuario.password,
+            password: passwordHasheada,
             rol: 'admin',
             personaId: nuevaPersona._id,
             tiendaId: nuevaTienda._id
@@ -60,7 +78,13 @@ const registrar = async (req, res) => {
             nombre: nuevaPersona.nombre
         };
 
-        res.status(201).json({ mensaje: 'Cuenta, tienda y suscripción registradas exitosamente' });
+        // Generar JWT
+        const token = generarToken(nuevoUsuario);
+
+        res.status(201).json({
+            mensaje: 'Cuenta, tienda y suscripción registradas exitosamente',
+            token
+        });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(409).json({ mensaje: 'Ya existe un usuario con ese email' });
@@ -84,7 +108,13 @@ const login = async (req, res) => {
 
         const usuario = await Usuario.findOne({ email }).populate('personaId');
 
-        if (!usuario || usuario.password !== password) {
+        if (!usuario) {
+            return res.status(401).json({ mensaje: 'Email o contraseña incorrectos' });
+        }
+
+        // Comparar contraseña con bcrypt
+        const passwordValida = await bcrypt.compare(password, usuario.password);
+        if (!passwordValida) {
             return res.status(401).json({ mensaje: 'Email o contraseña incorrectos' });
         }
 
@@ -103,7 +133,19 @@ const login = async (req, res) => {
             nombre: usuario.personaId.nombre
         };
 
-        res.status(200).json({ mensaje: 'Login exitoso' });
+        // Generar JWT
+        const token = generarToken(usuario);
+
+        res.status(200).json({
+            mensaje: 'Login exitoso',
+            token,
+            usuario: {
+                id: usuario._id,
+                email: usuario.email,
+                rol: usuario.rol,
+                nombre: usuario.personaId.nombre
+            }
+        });
     } catch (error) {
         res.status(500).json({ mensaje: 'Error interno del servidor' });
     }

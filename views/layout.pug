@@ -26,9 +26,39 @@ html(lang="es")
           a.btn-white(href="/auth/login") Iniciar sesión
           a.btn-header-primary(href="/auth/registro") Crear tienda
 
+    //- Notificaciones en tiempo real
+    div#notificacion-ws(style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; background:#1a1a2e; color:#fff; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.3); z-index:9999; max-width:320px;")
+      p#notificacion-texto(style="margin:0; font-size:0.9rem;")
+
     main
       block content
 
     footer
       div.scroll-down ↓
       p TechRetail Solutions S.R.L. — Proyecto Backend 2025
+
+    //- Socket.IO cliente (solo para usuarios autenticados)
+    if session && session.usuario
+      script(src="/socket.io/socket.io.js")
+      script.
+        const socket = io();
+        const tiendaId = "#{session.usuario.tiendaId}";
+
+        // Unirse a la sala de la tienda
+        socket.emit('unirse-tienda', tiendaId);
+
+        function mostrarNotificacion(texto) {
+          const div = document.getElementById('notificacion-ws');
+          const p = document.getElementById('notificacion-texto');
+          p.textContent = texto;
+          div.style.display = 'block';
+          setTimeout(() => { div.style.display = 'none'; }, 30000);
+        }
+
+        socket.on('nueva-transaccion', (data) => {
+          mostrarNotificacion('💰 ' + data.mensaje + ' — $' + data.transaccion.monto);
+        });
+
+        socket.on('estado-transaccion', (data) => {
+          mostrarNotificacion('🔄 ' + data.mensaje);
+        });

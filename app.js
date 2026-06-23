@@ -1,10 +1,14 @@
 require("dotenv").config();
+const http = require('http');
 const express = require("express");
 const connectDB = require("./config/database");
 const errorHandler = require("./middlewares/errorHandler");
 const session = require('express-session');
+const { iniciarSocket } = require('./config/socket');
 
 const app = express();
+const server = http.createServer(app);
+iniciarSocket(server);
 const PORT = process.env.PORT || 3000;
 
 // Conectar a MongoDB
@@ -60,6 +64,7 @@ app.use((req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor corriendo en puerto ${PORT}`);
+    console.log(`Socket.IO activo en puerto ${PORT}`);
 });
