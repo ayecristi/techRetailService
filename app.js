@@ -1,6 +1,7 @@
 require("dotenv").config();
 const http = require('http');
 const express = require("express");
+const morgan = require('morgan');
 const connectDB = require("./config/database");
 const errorHandler = require("./middlewares/errorHandler");
 const session = require('express-session');
@@ -35,6 +36,13 @@ app.use((req, res, next) => {
 });
 app.use(require('./middlewares/userLog'));
 
+// Logging HTTP
+if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('combined'));
+} else {
+    app.use(morgan('dev'));
+}
+
 // Archivos estáticos
 app.use(express.static("public"));
 
@@ -42,7 +50,6 @@ app.use(express.static("public"));
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-// Rutas
 app.use("/usuarios", usuariosRoutes);
 app.use("/transacciones", transaccionesRoutes);
 app.use("/tiendas", tiendasRoutes);
@@ -50,21 +57,40 @@ app.use('/auth', authRoutes);
 app.use('/productos', productosRoutes);
 app.use('/suscripciones', suscripcionesRoutes);
 app.get('/', (req, res) => {
+    if (req.session.usuario) {
+        return res.redirect('/tiendas');
+    }
     res.redirect('/auth/login');
+});
+// Alias para el dashboard
+app.get('/dashboard', (req, res) => {
+    res.redirect('/tiendas');
 });
 
 // Middleware de manejo de errores (debe ir al final)
 app.use(errorHandler);
 
-// Middleware para rutas no encontradas
+// Middleware para rutas no encontradas (404)
 app.use((req, res) => {
-    res.status(404).json({
-        mensaje: 'Ruta no encontrada',
-        ruta: req.originalUrl
+    const esApiRequest = req.originalUrl.includes('/api');
+    if (esApiRequest) {
+        return res.status(404).json({
+            mensaje: 'Ruta no encontrada',
+            ruta: req.originalUrl
+        });
+    }
+    res.status(404).render('error', {
+        statusCode: 404,
+        mensaje: `La página "${req.originalUrl}" no existe.`,
+        errores: null
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
-    console.log(`Socket.IO activo en puerto ${PORT}`);
-});
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`Servidor corriendo en puerto ${PORT}`);
+        console.log(`Socket.IO activo en puerto ${PORT}`);
+    });
+}
+
+module.exports = app;

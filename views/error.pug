@@ -1,0 +1,28 @@
+extends layout
+
+block content
+  .login-card(style="max-width: 550px; margin: 60px auto; border-left: 4px solid #ef4444; padding: 40px; text-align: center;")
+    span(style="font-size: 56px; display: block; margin-bottom: 16px;")
+      if statusCode === 404
+        | 🔍
+      else if statusCode === 403
+        | 🚫
+      else if statusCode === 401
+        | 🔒
+      else
+        | ⚠️
+
+    h2(style="color: #ef4444; margin-top: 0;") Error #{statusCode}
+    p.subtitle(style="font-size: 16px; margin-bottom: 25px;") #{mensaje}
+
+    if errores && errores.length > 0
+      div(style="background-color: #ef444410; border: 1px solid #ef444420; padding: 15px; border-radius: 6px; margin-bottom: 25px; text-align: left;")
+        strong(style="color: #f87171; display: block; margin-bottom: 8px; font-size: 13px; text-transform: uppercase;") Detalles del error:
+        ul(style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6;")
+          each err in errores
+            li= err
+
+    .btn-row(style="margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;")
+      a.btn-primary(href="/" style="display: inline-block; padding: 12px 24px; text-align: center; text-decoration: none;") 🏠 Volver al Inicio
+      if statusCode === 401
+        a.btn-outline(href="/auth/login" style="display: inline-block; padding: 12px 24px; text-align: center; text-decoration: none;") 🔐 Iniciar Sesión
