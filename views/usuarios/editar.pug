@@ -1,0 +1,60 @@
+extends ../layout
+
+block content
+  .login-card(style="max-width: 600px; margin: 40px auto;")
+    h2 Editar Integrante
+    p.subtitle Modificá los datos de cuenta y personales.
+
+    form(method="POST" action=`/usuarios/actualizar/${usuario._id}`)
+      h4(style="margin-top: 20px; margin-bottom: 10px; color: var(--primary); font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;") Datos Personales
+      
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="nombre") Nombre
+          input(type="text" id="nombre" name="nombre" value=(usuario.personaId ? usuario.personaId.nombre : '') placeholder="Ej: Juan" required style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="apellido") Apellido
+          input(type="text" id="apellido" name="apellido" value=(usuario.personaId ? usuario.personaId.apellido : '') placeholder="Ej: Pérez" required style="width: 100%;")
+
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="email") Email Personal / Contacto
+          input(type="email" id="email" name="email" value=(usuario.personaId ? usuario.personaId.email : '') placeholder="contacto@ejemplo.com" required style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="telefono") Teléfono
+          input(type="text" id="telefono" name="telefono" value=(usuario.personaId ? usuario.personaId.telefono : '') placeholder="+54..." style="width: 100%;")
+
+      h4(style="margin-top: 30px; margin-bottom: 10px; color: var(--primary); font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;") Datos de Cuenta / Login
+
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="emailLogin") Email de Acceso
+          input(type="email" id="emailLogin" name="emailLogin" value=usuario.email placeholder="login@tienda.com" required style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="emailRecuperacion") Email Recuperación
+          input(type="email" id="emailRecuperacion" name="emailRecuperacion" value=usuario.emailRecuperacion placeholder="opcional@recuperar.com" style="width: 100%;")
+
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="password") Contraseña
+          input(type="password" id="password" name="password" placeholder="Dejar vacío para no cambiar" style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="rol") Rol de Acceso
+          select(id="rol" name="rol" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+            option(value="vendedor" selected=(usuario.rol === 'vendedor')) Vendedor (Acceso Limitado)
+            option(value="admin" selected=(usuario.rol === 'admin')) Administrador (Acceso Total)
+
+      .form-group
+        label(for="activo") Estado de Cuenta
+        select(id="activo" name="activo" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+          option(value="activo" selected=(usuario.activo === 'activo')) Activo
+          option(value="suspendido" selected=(usuario.activo === 'suspendido')) Suspendido
+          option(value="eliminado" selected=(usuario.activo === 'eliminado')) Eliminado
+
+      .btn-row(style="margin-top: 35px; display: flex; gap: 12px;")
+        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Guardar Cambios
+        a.btn-outline(href="/usuarios/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar

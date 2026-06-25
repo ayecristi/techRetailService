@@ -2,46 +2,104 @@ extends ../layout
 
 block content
   .dashboard-wrapper
-    
     .dashboard-header
       div
-        h2 Panel de Control
-        p Gestioná el stock, las ventas y la configuración de tu comercio
+        h2 Panel de Control: #{tienda.nombre}
+        p Gestioná el stock, las ventas y la configuración de tu comercio.
       a.btn-primary(href="/productos/nuevo") + Nuevo Producto
 
-    .dashboard-grid
-      .card
-        p Ventas totales
-        h3 $0,00
+    // 4 Cards de Métricas
+    .dashboard-grid(style="margin-bottom: 30px;")
+      .card(style="border-left-color: var(--primary);")
+        p Ventas Hoy (Cant.)
+        h3= ventasHoy
       
       .card.card-green
-        p Productos en catálogo
-        h3= productos.length
+        p Total Ventas Hoy ($)
+        h3 $#{totalVentasHoy.toFixed(2)}
       
       .card.card-amber
-        p Órdenes nuevas
-        h3 0
+        p Transacciones Pendientes
+        h3= pendientes
+      
+      .card(style="border-left-color: #3b82f6;")
+        p Productos Activos
+        h3= totalProductos
 
-    if productos.length === 0
-      .empty-state
-        span 📦
-        h4 Tu tienda está lista, pero falta tu catálogo
-        p Creá tu primer producto para empezar a registrar transacciones y gestionar el stock de tu marca en la plataforma.
-        a.btn-outline(href="/productos/nuevo") Cargar primer producto
-    else
-      table
-        thead
-          tr
-            th Nombre
-            th Categoría
-            th Precio
-            th Stock
-            th Estado
-        tbody
-          each producto in productos
-            tr
-              td= producto.nombre
-              td= producto.categoria || '-'
-              td= '$' + producto.precio
-              td= producto.stock
-              td= producto.activo ? 'Activo' : 'Inactivo'
+    // Plan de Suscripción
+    .card(style="margin-bottom: 30px; border-left-color: #8b5cf6; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;")
+      div
+        strong(style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; display: block; letter-spacing: 0.5px; margin-bottom: 4px;") Suscripción Activa
+        if suscripcion
+          h4(style="margin: 0; font-size: 18px; color: #f8fafc; font-weight: 600; text-transform: uppercase;") 
+            | Plan #{suscripcion.plan} 
+            span(style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background-color: #10b98120; color: #34d399; border: 1px solid #10b98130; margin-left: 8px;")= suscripcion.estado
+          p(style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);") Precio mensual: $#{suscripcion.precioMensual}/mes
+        else
+          h4(style="margin: 0; font-size: 18px; color: #ef4444; font-weight: 600;") Sin suscripción activa
+          p(style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);") Tu comercio no tiene un plan activo.
+      a.btn-outline(href="/suscripciones/mi-suscripcion" style="padding: 10px 20px; font-size: 13px; border-color: #8b5cf6; color: #a78bfa; text-decoration: none;") Gestionar Suscripción
+
+    // Botones de Acceso Rápido
+    .quick-actions(style="margin-bottom: 35px; display: flex; gap: 12px; flex-wrap: wrap;")
+      a.btn-outline(href="/transacciones/listar" style="flex: 1; min-width: 150px; text-align: center; text-decoration: none;") 💸 Transacciones
+      a.btn-outline(href="/productos/listar" style="flex: 1; min-width: 150px; text-align: center; text-decoration: none;") 📦 Productos
+      a.btn-outline(href="/transacciones/crear" style="flex: 1; min-width: 150px; text-align: center; text-decoration: none; border-color: var(--primary); color: var(--primary);") ⚡ Registrar Venta
+
+    .dashboard-grid(style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; margin-top: 10px;")
+      
+      // Últimas Transacciones
+      .card(style="border-left: none; padding: 25px;")
+        h4(style="margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: #f8fafc;") Últimas Transacciones
+        if ultimasTransacciones && ultimasTransacciones.length > 0
+          table(style="width: 100%; border-collapse: collapse; font-size: 13px;")
+            thead
+              tr(style="border-bottom: 1px solid var(--border-color); text-align: left;")
+                th(style="padding-bottom: 8px;") Fecha
+                th(style="padding-bottom: 8px;") Pago
+                th(style="padding-bottom: 8px;") Estado
+                th(style="padding-bottom: 8px; text-align: right;") Monto
+            tbody
+              each t in ultimasTransacciones
+                tr(style="border-bottom: 1px solid #1a1a1a;")
+                  td(style="padding: 10px 0;")= new Date(t.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+                  td(style="padding: 10px 0; text-transform: capitalize;")= t.metodoPago
+                  td(style="padding: 10px 0;")
+                    if t.estado === 'completado'
+                      span(style="color: #10b981; font-weight: 600;") Completado
+                    else if t.estado === 'pendiente'
+                      span(style="color: #f59e0b; font-weight: 600;") Pendiente
+                    else if t.estado === 'reembolsado'
+                      span(style="color: #9ca3af; font-weight: 600;") Reembolsado
+                    else
+                      span(style="color: #ef4444; font-weight: 600;") Cancelado
+                  td(style="padding: 10px 0; text-align: right; font-weight: 600; color: #f8fafc;") $#{t.monto.toFixed(2)}
+          div(style="margin-top: 15px; text-align: center;")
+            a(href="/transacciones/listar" style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 600;") Ver todas las transacciones ➜
+        else
+          .empty-state(style="padding: 20px 0;")
+            p Sin transacciones registradas.
+
+      // Productos con Stock Bajo
+      .card(style="border-left: none; padding: 25px;")
+        h4(style="margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: #f8fafc;") Alertas de Stock Bajo
+        if productosStockBajo && productosStockBajo.length > 0
+          table(style="width: 100%; border-collapse: collapse; font-size: 13px;")
+            thead
+              tr(style="border-bottom: 1px solid var(--border-color); text-align: left;")
+                th(style="padding-bottom: 8px;") Producto
+                th(style="padding-bottom: 8px; text-align: right;") Stock Restante
+                th(style="padding-bottom: 8px; text-align: right;") Acciones
+            tbody
+              each p in productosStockBajo
+                tr(style="border-bottom: 1px solid #1a1a1a;")
+                  td(style="padding: 10px 0; font-weight: 500; color: #f8fafc;")= p.nombre
+                  td(style="padding: 10px 0; text-align: right; color: #ef4444; font-weight: 700;")= p.stock
+                  td(style="padding: 10px 0; text-align: right;")
+                    a.btn-outline(href=`/productos/editar/${p._id}` style="padding: 4px 8px; font-size: 11px; border-color: #f59e0b40; color: #f59e0b; text-decoration: none;") Reponer
+          div(style="margin-top: 15px; text-align: center;")
+            a(href="/productos/listar" style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 600;") Ver catálogo completo ➜
+        else
+          .empty-state(style="padding: 20px 0; text-align: center; color: var(--text-muted);")
+            span(style="font-size: 24px; display: block; margin-bottom: 10px;") ✅
+            p ¡Todo en orden! No hay productos con stock crítico.

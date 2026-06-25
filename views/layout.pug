@@ -14,7 +14,10 @@ html(lang="es")
       nav
         if session && session.usuario
           a(href="/tiendas") Mi tienda
-          a(href="/transacciones") Transacciones
+          a(href="/transacciones/listar") Transacciones
+          a(href="/productos/listar") Productos
+          if session.usuario.rol === 'admin'
+            a(href="/usuarios/listar") Usuarios
         else
           a(href="/suscripciones") Planes
           a(href="/") Contacto

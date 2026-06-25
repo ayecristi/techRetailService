@@ -17,7 +17,8 @@ const obtenerUsuarios = async (req, res) => {
 // GET ALL - Vista
 const obtenerUsuariosVista = async (req, res) => {
     try {
-        const usuarios = await Usuario.find()
+        const tiendaId = req.session.usuario?.tiendaId;
+        const usuarios = await Usuario.find({ tiendaId })
             .populate('personaId')
             .populate('tiendaId', 'nombre');
         res.render('usuarios/listar', { usuarios });
@@ -69,8 +70,20 @@ const crearUsuario = async (req, res) => {
 
         // Crear Usuario vinculado a la Persona
         const passwordHasheada = await bcrypt.hash(password, 10);
+        
+        let finalTiendaId = tiendaId;
+        if (!req.originalUrl.includes('/api')) {
+            finalTiendaId = req.session.usuario?.tiendaId;
+        } else if (req.usuario && req.usuario.tiendaId) {
+            finalTiendaId = req.usuario.tiendaId;
+        }
+
         const nuevoUsuario = new Usuario({
-            emailLogin, emailRecuperacion, password: passwordHasheada, rol, tiendaId,
+            email: emailLogin,
+            emailRecuperacion,
+            password: passwordHasheada,
+            rol,
+            tiendaId: finalTiendaId,
             personaId: nuevaPersona._id
         });
         await nuevoUsuario.save();
@@ -114,6 +127,15 @@ const actualizarUsuario = async (req, res) => {
             }
         }
 
+        const userTiendaId = req.session.usuario?.tiendaId || req.usuario?.tiendaId;
+        if (userTiendaId && String(usuario.tiendaId) !== String(userTiendaId)) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(403).json({ mensaje: 'Acceso denegado' });
+            } else {
+                return res.status(403).send('Acceso denegado');
+            }
+        }
+
         // Actualizar Persona
         await Persona.findByIdAndUpdate(
             usuario.personaId,
@@ -121,8 +143,15 @@ const actualizarUsuario = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+        let finalTiendaId = tiendaId || usuario.tiendaId;
+        if (!req.originalUrl.includes('/api')) {
+            finalTiendaId = req.session.usuario?.tiendaId || usuario.tiendaId;
+        } else if (req.usuario && req.usuario.tiendaId) {
+            finalTiendaId = req.usuario.tiendaId;
+        }
+
         // Actualizar Usuario
-        const datosActualizar = { emailLogin, emailRecuperacion, rol, activo, tiendaId };
+        const datosActualizar = { email: emailLogin, emailRecuperacion, rol, activo, tiendaId: finalTiendaId };
         if (password) {
             datosActualizar.password = await bcrypt.hash(password, 10);
         }
@@ -139,15 +168,23 @@ const actualizarUsuario = async (req, res) => {
             return res.redirect('/usuarios/listar');
         }
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error interno del servidor' });
+        if (req.originalUrl.includes('/api')) {
+            res.status(500).json({ mensaje: 'Error interno del servidor', error: error.message });
+        } else {
+            res.status(500).send('Error interno: ' + error.message);
+        }
     }
 };
 
 const formularioEditarUsuario = async (req, res) => {
     try {
+        const tiendaId = req.session.usuario?.tiendaId;
         const usuario = await Usuario.findById(req.params.id).populate('personaId');
         if (!usuario) {
             return res.status(404).send('Usuario no encontrado');
+        }
+        if (tiendaId && String(usuario.tiendaId) !== String(tiendaId)) {
+            return res.status(403).send('Acceso denegado');
         }
         res.render('usuarios/editar', { usuario });
     } catch (error) {
@@ -168,6 +205,15 @@ const eliminarUsuario = async (req, res) => {
             }
         }
 
+        const userTiendaId = req.session.usuario?.tiendaId || req.usuario?.tiendaId;
+        if (userTiendaId && String(usuario.tiendaId) !== String(userTiendaId)) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(403).json({ mensaje: 'Acceso denegado' });
+            } else {
+                return res.status(403).send('Acceso denegado');
+            }
+        }
+
         // Eliminar Persona asociada también
         await Persona.findByIdAndDelete(usuario.personaId);
         await Usuario.findByIdAndDelete(req.params.id);
@@ -178,7 +224,11 @@ const eliminarUsuario = async (req, res) => {
             return res.redirect('/usuarios/listar');
         }
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error interno del servidor' });
+        if (req.originalUrl.includes('/api')) {
+            res.status(500).json({ mensaje: 'Error interno del servidor', error: error.message });
+        } else {
+            res.status(500).send('Error al eliminar: ' + error.message);
+        }
     }
 };
 

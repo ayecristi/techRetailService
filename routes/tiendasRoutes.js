@@ -9,8 +9,9 @@ const {
 } = require("../controllers/tiendasController");
 const { requireAuth } = require('../middlewares/auth');
 
-// Vista protegida
+// Vistas protegidas
 router.get("/", requireAuth, obtenerDashboard);
+router.get("/dashboard", requireAuth, obtenerDashboard);
 
 // API 
 router.get("/api", obtenerTiendas);

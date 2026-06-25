@@ -1,5 +1,7 @@
 const Tienda = require("../models/Tienda");
 const Producto = require("../models/Producto");
+const Transaccion = require("../models/Transaccion");
+const Suscripcion = require("../models/Suscripcion");
 
 const obtenerTiendas = async (req, res) => {
     try {
@@ -47,16 +49,37 @@ const crearTienda = async (req, res) => {
 const obtenerDashboard = async (req, res) => {
     try {
         const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) return res.redirect('/auth/login');
 
-        if (!tiendaId) {
-            return res.redirect('/auth/login');
-        }
+        // Inicio y fin del día actual
+        const hoy = new Date();
+        const inicioDia = new Date(hoy.setHours(0, 0, 0, 0));
+        const finDia = new Date(hoy.setHours(23, 59, 59, 999));
 
-        const tienda = await Tienda.findById(tiendaId);
-        const productos = await Producto.find({ tiendaId });
+        const [tienda, productos, suscripcion, transaccionesHoy, pendientes, productosStockBajo, ultimasTransacciones] = await Promise.all([
+            Tienda.findById(tiendaId),
+            Producto.countDocuments({ tiendaId, activo: true }),
+            Suscripcion.findOne({ tiendaId }),
+            Transaccion.find({ tiendaId, estado: 'completado', createdAt: { $gte: inicioDia, $lte: finDia } }),
+            Transaccion.countDocuments({ tiendaId, estado: 'pendiente' }),
+            Producto.find({ tiendaId, stock: { $lte: 5 }, activo: true }).sort({ stock: 1 }).limit(5),
+            Transaccion.find({ tiendaId }).sort({ createdAt: -1 }).limit(5)
+        ]);
 
-        res.render("tiendas/dashboard", { tienda, productos });
+        const totalVentasHoy = transaccionesHoy.reduce((sum, t) => sum + t.monto, 0);
+
+        res.render("tiendas/dashboard", {
+            tienda,
+            totalProductos: productos,
+            suscripcion,
+            ventasHoy: transaccionesHoy.length,
+            totalVentasHoy,
+            pendientes,
+            productosStockBajo,
+            ultimasTransacciones
+        });
     } catch (error) {
+        console.error('Error en dashboard:', error);
         res.status(500).send("Error interno del servidor");
     }
 };

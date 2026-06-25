@@ -1,0 +1,39 @@
+extends ../layout
+
+block content
+  .login-card(style="max-width: 500px; margin: 40px auto;")
+    h2 Mi Suscripción
+    p.subtitle Gestioná el plan de tu comercio y actualizá tus beneficios.
+
+    if suscripcion
+      .card(style="border-left-color: #8b5cf6; padding: 20px; margin-bottom: 35px; background-color: #171717;")
+        strong(style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; display: block; letter-spacing: 0.5px; margin-bottom: 4px;") Plan Contratado
+        h4(style="margin: 0; font-size: 20px; color: #f8fafc; font-weight: 700; text-transform: uppercase;") 
+          | Plan #{suscripcion.plan}
+          span(style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background-color: #10b98120; color: #34d399; border: 1px solid #10b98130; margin-left: 10px; text-transform: uppercase;")= suscripcion.estado
+        
+        .info-row(style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;")
+          div
+            span(style="color: var(--text-muted); display: block;") Costo Mensual
+            strong(style="color: #f8fafc; font-size: 15px;") $#{suscripcion.precioMensual}/mes
+          div
+            span(style="color: var(--text-muted); display: block;") Fecha de Inicio
+            strong(style="color: #f8fafc;")= new Date(suscripcion.fechaInicio || suscripcion.createdAt).toLocaleDateString('es-AR')
+
+      h4(style="margin-bottom: 15px; color: #f8fafc; font-size: 15px; font-weight: 600;") Cambiar de Plan
+      form(method="POST" action="/suscripciones/cambiar-plan")
+        .form-group
+          label(for="plan") Seleccioná un nuevo plan
+          select(id="plan" name="plan" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+            each datos, nombrePlan in planes
+              option(value=nombrePlan selected=(suscripcion.plan === nombrePlan)) 
+                | #{nombrePlan.toUpperCase()} ($#{datos.precio}/mes)
+        
+        .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
+          button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer; background-color: #8b5cf6;") Actualizar Suscripción
+          a.btn-outline(href="/tiendas/dashboard" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Volver
+    else
+      .empty-state(style="padding: 20px 0; text-align: center;")
+        h4 Sin suscripción configurada
+        p Tu comercio no tiene un plan de suscripción registrado en la base de datos.
+        a.btn-primary(href="/tiendas/dashboard") Volver al Dashboard

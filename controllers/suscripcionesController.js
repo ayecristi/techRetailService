@@ -130,11 +130,37 @@ const cancelarSuscripcion = async (req, res) => {
     }
 };
 
+const verMiSuscripcion = async (req, res) => {
+    try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        if (!tiendaId) return res.redirect('/auth/login');
+        const suscripcion = await Suscripcion.findOne({ tiendaId }).populate('tiendaId', 'nombre');
+        res.render('suscripciones/mi-suscripcion', { suscripcion, planes: DETALLES_PLANES });
+    } catch (error) {
+        res.status(500).send('Error interno: ' + error.message);
+    }
+};
+
+const cambiarPlan = async (req, res) => {
+    try {
+        const tiendaId = req.session.usuario?.tiendaId;
+        const { plan } = req.body;
+        const precioMensual = PRECIOS_PLAN[plan];
+        if (!precioMensual) return res.status(400).send('Plan inválido');
+        await Suscripcion.findOneAndUpdate({ tiendaId }, { plan, precioMensual }, { new: true, runValidators: true });
+        res.redirect('/suscripciones/mi-suscripcion');
+    } catch (error) {
+        res.status(500).send('Error al cambiar plan: ' + error.message);
+    }
+};
+
 module.exports = {
     obtenerSuscripciones,
     obtenerSuscripcionPorId,
     obtenerSuscripcionPorTienda,
     crearSuscripcion,
     actualizarSuscripcion,
-    cancelarSuscripcion
+    cancelarSuscripcion,
+    verMiSuscripcion,
+    cambiarPlan
 };
