@@ -7,7 +7,8 @@ const transaccionSchema = new mongoose.Schema({
         required: [true, 'El ID de la tienda es obligatorio']
     },
     usuarioId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario',
         required: [true, 'El ID del usuario es obligatorio']
     },
     monto: {
@@ -76,5 +77,23 @@ const transaccionSchema = new mongoose.Schema({
 }, { 
     timestamps: true 
 });
+
+transaccionSchema.methods.procesarVenta = function() {
+    if (this.estado !== 'pendiente') {
+        return { exito: false, mensaje: 'Solo se pueden procesar transacciones pendientes' };
+    }
+    this.estado = 'completado';
+    this.comision = parseFloat((this.monto * 0.02).toFixed(2));
+    this.montoNeto = parseFloat((this.monto - this.comision).toFixed(2));
+    return { exito: true, mensaje: 'Venta procesada exitosamente', transaccion: this };
+};
+
+transaccionSchema.methods.reembolsar = function() {
+    if (this.estado !== 'completado') {
+        return { exito: false, mensaje: 'Solo se pueden reembolsar transacciones completadas' };
+    }
+    this.estado = 'reembolsado';
+    return { exito: true, mensaje: 'Reembolso procesado exitosamente' };
+};
 
 module.exports = mongoose.model('Transaccion', transaccionSchema);

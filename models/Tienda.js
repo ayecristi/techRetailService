@@ -33,12 +33,14 @@ const tiendaSchema = new mongoose.Schema({
 });
 
 tiendaSchema.methods.crearProducto = async function(datosProducto) {
-    console.log(`Creando producto en tienda ${this.nombre}`);
+    const Producto = mongoose.model('Producto');
+    const producto = new Producto({ ...datosProducto, tiendaId: this._id });
+    return await producto.save();
 };
 
 tiendaSchema.methods.listarProductos = async function() {
-    console.log(`Listando productos de tienda ${this.nombre}`);
-    return [];
+    const Producto = mongoose.model('Producto');
+    return await Producto.find({ tiendaId: this._id, activo: true }).sort({ nombre: 1 });
 };
 
 module.exports = mongoose.model('Tienda', tiendaSchema);

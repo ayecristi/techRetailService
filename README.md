@@ -197,6 +197,24 @@ El sistema utiliza **Socket.IO** para emitir eventos en tiempo real a los usuari
 
 ---
 
+## Despliegue en Render
+
+Para desplegar este proyecto en [Render](https://render.com), sigue estos pasos:
+
+1. Realiza un **fork** de este repositorio en tu cuenta de GitHub.
+2. Crea una cuenta en [render.com](https://render.com) e inicia sesión.
+3. Ve a **New +** y selecciona **Web Service**.
+4. Conecta tu repositorio de GitHub recién forkeado.
+5. Render detectará automáticamente el archivo `render.yaml` y configurará los comandos de compilación e inicio.
+6. En la pestaña **Environment** del panel del servicio en Render, configura las siguientes variables de entorno obligatorias:
+   - `MONGODB_URI` (Tu cadena de conexión a MongoDB Atlas)
+   - `JWT_SECRET` (Una clave secreta segura para firmar tokens JWT)
+   - `SESSION_SECRET` (Una clave secreta segura para sesiones de Express)
+7. Guarda los cambios. El despliegue inicial comenzará de inmediato.
+8. Cada posterior `push` a la rama `main` de tu repositorio activará un nuevo despliegue automático.
+
+---
+
 ## Licencia
 
 Proyecto académico — Uso educativo.
