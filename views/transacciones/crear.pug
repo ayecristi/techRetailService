@@ -1,83 +1,206 @@
 extends ../layout
 
 block content
-  .login-card(style="max-width: 500px; margin: 40px auto;")
-    h2 Nueva Transacción
-    p.subtitle Registrá una venta o movimiento para tu comercio de forma directa.
+  .dashboard-wrapper(style="max-width: 700px; margin: 40px auto;")
+    .dashboard-header(style="margin-bottom: 25px;")
+      div
+        h2 Nueva Transacción
+        p.subtitle Seleccioná los productos y completá los datos del cliente.
 
     form#form-transaccion(method="POST" action="/transacciones/guardar")
       input(type="hidden" name="tiendaId" value=tienda._id)
-      
-      .form-group
-        label Tienda
-        input(type="text" value=tienda.nombre disabled style="background-color: #1a1a1a; border-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; opacity: 0.8;")
+      input#input-monto(type="hidden" name="monto" value="0")
+      input#input-items(type="hidden" name="items" value="[]")
 
-      .form-group
-        label(for="usuarioId") Cliente / Usuario
-        select(id="usuarioId" name="usuarioId" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
-          option(value="") -- Seleccionar Usuario --
-          each usuario in usuarios
-            option(value=usuario.id)= usuario.nombre
+      // Cliente y Método de Pago
+      .card(style="padding: 20px; margin-bottom: 20px;")
+        h4(style="margin: 0 0 18px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;") Datos del cliente
 
-      .form-row
-        .form-group(style="flex: 1;")
-          label(for="monto") Monto ($)
-          input(type="number" id="monto" name="monto" step="0.01" placeholder="0.00" required style="width: 100%;")
+        .form-group
+          label(for="usuarioId") Cliente / Usuario
+          select#usuarioId(name="usuarioId" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+            option(value="") Seleccioná un usuario
+            each usuario in usuarios
+              option(value=String(usuario._id)) #{usuario.personaId ? usuario.personaId.nombre + ' ' + usuario.personaId.apellido : usuario.email}
 
-        .form-group(style="flex: 1;")
-          label(for="metodoPago") Método de Pago
-          select(id="metodoPago" name="metodoPago" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
-            option(value="") -- Seleccionar --
-            option(value="tarjeta") Tarjeta de Crédito/Débito
-            option(value="transferencia") Transferencia Bancaria
-            option(value="efectivo") Efectivo
-            option(value="paypal") PayPal
-            option(value="criptomoneda") Criptomoneda
+        .form-row
+          .form-group(style="flex: 1;")
+            label(for="metodoPago") Método de Pago
+            select#metodoPago(name="metodoPago" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+              option(value="") -- Seleccionar --
+              option(value="tarjeta") Tarjeta de Crédito/Débito
+              option(value="transferencia") Transferencia Bancaria
+              option(value="efectivo") Efectivo
+              option(value="paypal") PayPal
+              option(value="criptomoneda") Criptomoneda
 
-      .form-group
-        label(for="referencia") Referencia / Factura
-        input(type="text" id="referencia" name="referencia" placeholder="Ej: FAC-0001" style="width: 100%;")
+          .form-group(style="flex: 1;")
+            label(for="referencia") Referencia / Factura
+            input#referencia(type="text" name="referencia" placeholder="Ej: FAC-0001" style="width: 100%;")
 
-      .form-group
-        label(for="descripcion") Descripción / Notas
-        textarea(id="descripcion" name="descripcion" rows="3" placeholder="Detalles de la compra..." style="width: 100%; background-color: #171717; color: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;")
+        .form-group
+          label(for="descripcion") Descripción / Notas
+          textarea#descripcion(name="descripcion" rows="2" placeholder="Detalles adicionales..." style="width: 100%; background-color: #171717; color: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;")
 
-      .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
-        button#btn-submit.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Registrar Venta
-        a.btn-outline(href="/transacciones/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar
+      // Selector de Productos
+      .card(style="padding: 20px; margin-bottom: 20px;")
+        h4(style="margin: 0 0 18px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;") Productos
 
-    script.
-      const form = document.getElementById('form-transaccion');
-      const btn = document.getElementById('btn-submit');
+        if productos && productos.length > 0
+          .form-row(style="align-items: flex-end;")
+            .form-group(style="flex: 2;")
+              label Producto
+              select#select-producto(style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
+                option(value="") Seleccioná un producto
+                each producto in productos
+                  option(
+                    value=String(producto._id)
+                    data-nombre=producto.nombre
+                    data-precio=producto.precio
+                    data-stock=producto.stock
+                  ) #{producto.nombre} — $#{producto.precio.toFixed(2)} (stock: #{producto.stock})
+            .form-group(style="flex: 1;")
+              label Cantidad
+              input#input-cantidad(type="number" min="1" value="1" style="width: 100%;")
+            .form-group(style="flex: 0 0 auto;")
+              label &nbsp;
+              button#btn-agregar(type="button" style="padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap;") + Agregar
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+          // Tabla de items seleccionados
+          div#tabla-items-wrapper(style="display: none; margin-top: 10px;")
+            table(style="width: 100%; font-size: 13px;")
+              thead
+                tr
+                  th Producto
+                  th(style="width: 80px; text-align: center;") Cant.
+                  th(style="width: 120px; text-align: right;") Precio
+                  th(style="width: 120px; text-align: right;") Subtotal
+                  th(style="width: 50px;")
+              tbody#tbody-items
+        else
+          p(style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;") ⚠️ No hay productos con stock disponible en tu tienda. 
+            a(href="/productos/listar" style="color: var(--primary);") Ir a Productos
 
-        btn.disabled = true;
-        btn.textContent = 'Guardando...';
+      // Resumen del total
+      .card(style="padding: 20px; margin-bottom: 25px; background: #171717; border-left-color: var(--primary);")
+        .form-row(style="align-items: center; margin: 0;")
+          div(style="flex: 1;")
+            p(style="margin: 0; color: var(--text-muted); font-size: 13px; text-transform: uppercase; font-weight: 600;") Total a cobrar
+          div
+            span#total-display(style="font-size: 28px; font-weight: 700; color: #f8fafc;") $0.00
 
-        const datos = new URLSearchParams(new FormData(form));
+      .btn-row(style="display: flex; gap: 12px;")
+        button#btn-submit.btn-primary(type="submit" style="flex: 1; padding: 14px; text-align: center; border: none; cursor: pointer; font-size: 15px; font-weight: 600;") ⚡ Registrar Venta
+        a.btn-outline(href="/transacciones/listar" style="flex: 1; padding: 14px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar
 
-        try {
-          const res = await fetch('/transacciones/guardar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: datos
-          });
+  script.
+    // Catálogo de productos pasado desde el servidor
+    const selectProducto = document.getElementById('select-producto');
+    const inputCantidad  = document.getElementById('input-cantidad');
+    const btnAgregar     = document.getElementById('btn-agregar');
+    const tbodyItems     = document.getElementById('tbody-items');
+    const tablaWrapper   = document.getElementById('tabla-items-wrapper');
+    const totalDisplay   = document.getElementById('total-display');
+    const inputMonto     = document.getElementById('input-monto');
+    const inputItems     = document.getElementById('input-items');
 
-          if (res.ok || res.redirected) {
-            // Esperar 2.5 segundos para que se vea el toast antes de redirigir
-            setTimeout(() => {
-              window.location.href = '/transacciones/listar';
-            }, 2500);
-          } else {
-            btn.disabled = false;
-            btn.textContent = 'Registrar Venta';
-            alert('Error al guardar la transacción');
-          }
-        } catch (err) {
-          btn.disabled = false;
-          btn.textContent = 'Registrar Venta';
-          alert('Error de conexión');
-        }
+    let carrito = []; // { productoId, nombre, cantidad, precioUnitario, subtotal, stockMax }
+
+    function recalcular() {
+      const total = carrito.reduce((s, i) => s + i.subtotal, 0);
+      totalDisplay.textContent = '$' + total.toFixed(2);
+      inputMonto.value = total.toFixed(2);
+      inputItems.value = JSON.stringify(carrito.map(i => ({
+        productoId: i.productoId,
+        nombre: i.nombre,
+        cantidad: i.cantidad,
+        precioUnitario: i.precioUnitario,
+        subtotal: i.subtotal
+      })));
+    }
+
+    function renderTabla() {
+      tbodyItems.innerHTML = '';
+      carrito.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="padding: 10px 0; font-weight: 500; color: #f8fafc;">${item.nombre}</td>
+          <td style="text-align: center; padding: 10px 0;">
+            <input type="number" min="1" max="${item.stockMax}" value="${item.cantidad}"
+              style="width: 60px; text-align: center; background:#171717; color:white; border:1px solid var(--border-color); border-radius:4px; padding:4px;"
+              data-idx="${idx}" class="cant-input">
+          </td>
+          <td style="text-align: right; padding: 10px 0; color: var(--text-muted);">$${item.precioUnitario.toFixed(2)}</td>
+          <td style="text-align: right; padding: 10px 0; font-weight: 600; color: #f8fafc;">$${item.subtotal.toFixed(2)}</td>
+          <td style="text-align: center; padding: 10px 0;">
+            <button type="button" data-idx="${idx}" class="btn-remove" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:16px;">✕</button>
+          </td>`;
+        tbodyItems.appendChild(tr);
       });
+
+      // Eventos dinámicos
+      document.querySelectorAll('.cant-input').forEach(input => {
+        input.addEventListener('change', e => {
+          const i = parseInt(e.target.dataset.idx);
+          const val = Math.max(1, Math.min(parseInt(e.target.value) || 1, carrito[i].stockMax));
+          carrito[i].cantidad = val;
+          carrito[i].subtotal = parseFloat((val * carrito[i].precioUnitario).toFixed(2));
+          renderTabla();
+          recalcular();
+        });
+      });
+
+      document.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const i = parseInt(e.currentTarget.dataset.idx);
+          carrito.splice(i, 1);
+          renderTabla();
+          recalcular();
+          if (carrito.length === 0) tablaWrapper.style.display = 'none';
+        });
+      });
+
+      tablaWrapper.style.display = carrito.length > 0 ? 'block' : 'none';
+    }
+
+    if (btnAgregar) {
+      btnAgregar.addEventListener('click', () => {
+        const opt = selectProducto.options[selectProducto.selectedIndex];
+        if (!opt.value) return alert('Seleccioná un producto');
+        const cantidad = Math.max(1, parseInt(inputCantidad.value) || 1);
+        const precio = parseFloat(opt.dataset.precio);
+        const stock  = parseInt(opt.dataset.stock);
+        const nombre = opt.dataset.nombre;
+        const prodId = opt.value;
+
+        if (cantidad > stock) return alert(`Stock insuficiente (máximo: ${stock})`);
+
+        const existente = carrito.findIndex(i => i.productoId === prodId);
+        if (existente >= 0) {
+          const nuevaCant = carrito[existente].cantidad + cantidad;
+          if (nuevaCant > stock) return alert(`Stock insuficiente (máximo: ${stock})`);
+          carrito[existente].cantidad = nuevaCant;
+          carrito[existente].subtotal = parseFloat((nuevaCant * precio).toFixed(2));
+        } else {
+          carrito.push({ productoId: prodId, nombre, cantidad, precioUnitario: precio, subtotal: parseFloat((cantidad * precio).toFixed(2)), stockMax: stock });
+        }
+
+        renderTabla();
+        recalcular();
+        selectProducto.value = '';
+        inputCantidad.value = 1;
+      });
+    }
+
+    // Validar antes de enviar
+    document.getElementById('form-transaccion').addEventListener('submit', e => {
+      if (carrito.length === 0) {
+        e.preventDefault();
+        return alert('Agregá al menos un producto antes de registrar la venta.');
+      }
+      const total = parseFloat(inputMonto.value);
+      if (total <= 0) {
+        e.preventDefault();
+        return alert('El monto total debe ser mayor a $0.');
+      }
+    });

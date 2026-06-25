@@ -1,18 +1,24 @@
-// productosRoutes.js
 const express = require('express');
 const router = express.Router();
 const productosController = require('../controllers/productosController');
-const { requireAuth } = require('../middlewares/auth');
+const { requireAuth, verificarJWT, verificarJWTAdmin } = require('../middlewares/auth');
 
-// Vistas protegidas
-router.get('/', requireAuth, productosController.obtenerProductos);
-router.get('/tienda/:tiendaId', requireAuth, productosController.obtenerProductosPorTienda);
-router.get('/nuevo', requireAuth, (req, res) => res.render('productos/nuevo'));
-router.get('/:id', requireAuth, productosController.obtenerProductoPorId);
+// Rutas de Vistas
+router.get('/listar', requireAuth, productosController.obtenerProductosVista);
+router.get('/nuevo', requireAuth, productosController.formularioNuevoProducto);
+router.get('/editar/:id', requireAuth, productosController.formularioEditarProducto);
 
-// API libre
-router.post('/', productosController.crearProducto);
-router.put('/:id', productosController.actualizarProducto);
-router.delete('/:id', productosController.eliminarProducto);
+// Rutas de Acción (formularios)
+router.post('/guardar', requireAuth, productosController.crearProductoVista);
+router.post('/actualizar/:id', requireAuth, productosController.actualizarProductoVista);
+router.post('/eliminar/:id', requireAuth, productosController.eliminarProductoVista);
+
+// API REST con JWT
+router.get('/api', verificarJWT, productosController.obtenerProductos);
+router.get('/api/tienda/:tiendaId', verificarJWT, productosController.obtenerProductosPorTienda);
+router.get('/api/:id', verificarJWT, productosController.obtenerProductoPorId);
+router.post('/api', verificarJWT, productosController.crearProducto);
+router.put('/api/:id', verificarJWTAdmin, productosController.actualizarProducto);
+router.delete('/api/:id', verificarJWTAdmin, productosController.eliminarProducto);
 
 module.exports = router;

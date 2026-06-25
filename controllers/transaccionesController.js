@@ -1,14 +1,9 @@
-const fs = require("fs");
-const path = require("path");
+const mongoose = require('mongoose');
 const Transaccion = require("../models/Transaccion");
 const Tienda = require("../models/Tienda");
+const Usuario = require('../models/Usuario');
+const Producto = require('../models/Producto');
 const { notificarNuevaTransaccion, notificarCambioEstado } = require('../config/socket');
-const rutaUsuarios = path.join(__dirname, "../data/usuarios.json");
-
-const leerUsuarios = () => {
-    const data = fs.readFileSync(rutaUsuarios, "utf-8");
-    return JSON.parse(data);
-};
 
 // GET ALL - API
 const obtenerTransacciones = async (req, res) => {
@@ -126,8 +121,19 @@ const obtenerTransaccionVista = async (req, res) => {
             });
         }
 
-        const usuarios = leerUsuarios();
-        const usuario = usuarios.find(u => String(u.id) === String(transaccion.usuarioId));
+        let usuario = null;
+        if (transaccion && transaccion.usuarioId) {
+            const userDoc = await Usuario.findById(transaccion.usuarioId).populate('personaId');
+            if (userDoc) {
+                usuario = {
+                    id: userDoc._id,
+                    email: userDoc.email,
+                    nombre: userDoc.personaId 
+                        ? `${userDoc.personaId.nombre} ${userDoc.personaId.apellido}` 
+                        : userDoc.email
+                };
+            }
+        }
 
         res.render("transacciones/ver", { transaccion, usuario });
     } catch (error) {
@@ -162,15 +168,19 @@ const crearTransaccion = async (req, res) => {
             }
         }
 
-        const usuarios = leerUsuarios();
-        const usuarioExiste = usuarios.find(u => String(u.id) === String(usuarioId));
+        if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+            if (req.originalUrl.includes('/api')) {
+                return res.status(400).json({ mensaje: 'ID de usuario inválido' });
+            } else {
+                return res.status(400).send('ID de usuario inválido');
+            }
+        }
+        const usuarioExiste = await Usuario.findById(usuarioId);
         if (!usuarioExiste) {
             if (req.originalUrl.includes('/api')) {
-                return res.status(400).json({
-                    mensaje: 'El usuario especificado no existe'
-                });
+                return res.status(404).json({ mensaje: 'El usuario especificado no existe' });
             } else {
-                return res.status(400).send('El usuario especificado no existe');
+                return res.status(404).send('El usuario especificado no existe');
             }
         }
 
@@ -186,13 +196,23 @@ const crearTransaccion = async (req, res) => {
         }
 
         // Crear nueva transacción
+        // El formulario web envía items como JSON string; la API los envía como array
+        let itemsParseados = [];
+        if (items) {
+            try {
+                itemsParseados = typeof items === 'string' ? JSON.parse(items) : items;
+            } catch (_) {
+                itemsParseados = [];
+            }
+        }
+
         const nuevaTransaccion = new Transaccion({
             tiendaId,
             usuarioId,
             monto: parseFloat(monto),
             metodoPago,
             descripcion: descripcion ? descripcion.trim() : undefined,
-            items: items || [],
+            items: itemsParseados,
             referencia
         });
 
@@ -321,61 +341,90 @@ const eliminarTransaccion = async (req, res) => {
 const procesarVenta = async (req, res) => {
     try {
         const { id } = req.params;
+        const esApiRequest = req.originalUrl.includes('/api');
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ mensaje: "ID de transacción inválido" });
+            if (esApiRequest) return res.status(400).json({ mensaje: 'ID de transacción inválido' });
+            return res.redirect(`/transacciones/ver/${id}`);
         }
 
         const transaccion = await Transaccion.findById(id);
 
         if (!transaccion) {
-            return res.status(404).json({ mensaje: "Transacción no encontrada" });
+            if (esApiRequest) return res.status(404).json({ mensaje: 'Transacción no encontrada' });
+            return res.redirect('/transacciones/listar');
+        }
+
+        // Verificar stock suficiente antes de procesar
+        if (transaccion.items && transaccion.items.length > 0) {
+            for (const item of transaccion.items) {
+                if (item.productoId) {
+                    const producto = await Producto.findById(item.productoId);
+                    if (producto && producto.stock < item.cantidad) {
+                        const msg = `Stock insuficiente para "${producto.nombre}" (disponible: ${producto.stock}, requerido: ${item.cantidad})`;
+                        if (esApiRequest) return res.status(400).json({ mensaje: msg });
+                        return res.redirect(`/transacciones/ver/${id}?error=${encodeURIComponent(msg)}`);
+                    }
+                }
+            }
         }
 
         const resultado = transaccion.procesarVenta();
-        await transaccion.save();
+        if (resultado.exito) {
+            await transaccion.save();
 
-        // Notificar cambio de estado en tiempo real
-        notificarCambioEstado(transaccion.tiendaId, transaccion);
+            // Descontar stock de cada producto del pedido
+            if (transaccion.items && transaccion.items.length > 0) {
+                const actualizaciones = transaccion.items
+                    .filter(item => item.productoId)
+                    .map(item => Producto.findByIdAndUpdate(
+                        item.productoId,
+                        { $inc: { stock: -item.cantidad } },
+                        { new: true }
+                    ));
+                await Promise.all(actualizaciones);
+            }
 
-        res.json(resultado);
+            notificarCambioEstado(transaccion.tiendaId, transaccion);
+        }
+
+        if (esApiRequest) return res.json(resultado);
+        res.redirect(`/transacciones/ver/${id}`);
     } catch (error) {
         console.error('Error procesando venta:', error);
-        res.status(500).json({
-            mensaje: 'Error interno del servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
 };
+
 
 const reembolsarTransaccion = async (req, res) => {
     try {
         const { id } = req.params;
+        const esApiRequest = req.originalUrl.includes('/api');
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ mensaje: "ID de transacción inválido" });
+            if (esApiRequest) return res.status(400).json({ mensaje: 'ID de transacción inválido' });
+            return res.redirect('/transacciones/listar');
         }
 
         const transaccion = await Transaccion.findById(id);
 
         if (!transaccion) {
-            return res.status(404).json({ mensaje: "Transacción no encontrada" });
+            if (esApiRequest) return res.status(404).json({ mensaje: 'Transacción no encontrada' });
+            return res.redirect('/transacciones/listar');
         }
 
         const resultado = transaccion.reembolsar();
         if (resultado.exito) {
             await transaccion.save();
-            // Notificar reembolso en tiempo real
             notificarCambioEstado(transaccion.tiendaId, transaccion);
         }
 
-        res.json(resultado);
+        if (esApiRequest) return res.json(resultado);
+        res.redirect(`/transacciones/ver/${id}`);
     } catch (error) {
         console.error('Error reembolsando transacción:', error);
-        res.status(500).json({
-            mensaje: 'Error interno del servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
 };
 
@@ -383,13 +432,15 @@ const reembolsarTransaccion = async (req, res) => {
 const formularioCrearTransaccion = async (req, res) => {
     try {
         const tiendaId = req.session.usuario?.tiendaId;
-        if (!tiendaId) {
-            return res.redirect('/auth/login');
-        }
+        if (!tiendaId) return res.redirect('/auth/login');
 
-        const tienda = await Tienda.findById(tiendaId);
-        const usuarios = leerUsuarios();
-        res.render("transacciones/crear", { usuarios, tienda });
+        const [tienda, usuarios, productos] = await Promise.all([
+            Tienda.findById(tiendaId),
+            Usuario.find({ tiendaId }).populate('personaId', 'nombre apellido').select('email personaId'),
+            Producto.find({ tiendaId, activo: true, stock: { $gt: 0 } }).sort({ nombre: 1 })
+        ]);
+
+        res.render("transacciones/crear", { usuarios, tienda, productos });
     } catch (error) {
         console.error('Error obteniendo datos para crear transacción:', error);
         res.status(500).send("Error interno del servidor");
@@ -416,7 +467,9 @@ const formularioEditarTransaccion = async (req, res) => {
         }
 
         const tienda = await Tienda.findById(tiendaId);
-        const usuarios = leerUsuarios();
+        const usuarios = await Usuario.find({ tiendaId })
+            .populate('personaId', 'nombre apellido')
+            .select('email personaId');
         res.render("transacciones/editar", { transaccion, usuarios, tienda });
     } catch (error) {
         console.error('Error obteniendo datos para editar transacción:', error);

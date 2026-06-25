@@ -1,0 +1,40 @@
+extends ../layout
+
+block content
+  .login-card(style="max-width: 500px; margin: 40px auto;")
+    h2 Editar Producto
+    p.subtitle Modificá los datos del producto seleccionado.
+
+    form(method="POST" action=`/productos/actualizar/${producto._id}`)
+      .form-group
+        label(for="nombre") Nombre
+        input(type="text" id="nombre" name="nombre" value=producto.nombre placeholder="Ej: Remera básica" required style="width: 100%;")
+
+      .form-group
+        label(for="descripcion") Descripción
+        input(type="text" id="descripcion" name="descripcion" value=producto.descripcion placeholder="Descripción del producto" style="width: 100%;")
+
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="precio") Precio ($)
+          input(type="number" id="precio" name="precio" step="0.01" value=producto.precio placeholder="0.00" min="0" required style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="stock") Stock
+          input(type="number" id="stock" name="stock" value=producto.stock placeholder="0" min="0" required style="width: 100%;")
+
+      .form-group
+        label(for="categoria") Categoría
+        input(type="text" id="categoria" name="categoria" value=producto.categoria placeholder="Ej: Ropa, Electrónica..." style="width: 100%;")
+
+      .form-group
+        label(for="imagenUrl") URL de Imagen
+        input(type="text" id="imagenUrl" name="imagenUrl" value=producto.imagenUrl placeholder="http://..." style="width: 100%;")
+
+      .form-group(style="display: flex; align-items: center; gap: 10px; margin-top: 15px; margin-bottom: 15px;")
+        input(type="checkbox" id="activo" name="activo" checked=producto.activo style="width: auto; cursor: pointer;")
+        label(for="activo" style="margin: 0; cursor: pointer;") Producto Activo / Disponible
+
+      .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
+        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Guardar Cambios
+        a.btn-outline(href="/productos/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar

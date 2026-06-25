@@ -95,10 +95,16 @@ block content
 
       // Acciones
       .btn-row(style="margin-top: 35px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;")
-        a.btn-outline(href="/transacciones/listar" style="flex: 1; min-width: 160px; text-align: center; text-decoration: none;") 
+        a.btn-outline(href="/transacciones/listar" style="flex: 1; min-width: 160px; text-align: center; text-decoration: none;")
           | ⬅️ Volver al Listado
-        a.btn-outline(href=`/transacciones/editar/${transaccion.id}` style="flex: 1; min-width: 160px; text-align: center; text-decoration: none; border-color: #f59e0b40; color: #f59e0b;") 
-          | ✏️ Editar Transacción
-        form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="flex: 1; min-width: 160px; display: flex;" onsubmit="return confirm('¿Está seguro de eliminar esta transacción permanentemente?')")
-          button.btn-outline(type="submit" style="width: 100%; text-align: center; border-color: #ef444440; color: #ef4444; background: transparent; cursor: pointer; padding: 12px; font-weight: 600; font-size: 14px; border-radius: 6px;") 
-            | 🗑️ Eliminar Registro
+
+        if transaccion.estado === 'pendiente'
+          form(method="POST" action=`/transacciones/procesar/${transaccion.id}` style="flex: 1; min-width: 160px; display: flex;" onsubmit="return confirm('¿Procesar esta venta como completada?')")
+            button.btn-outline(type="submit" style="width: 100%; text-align: center; border-color: #10b98140; color: #34d399; background: transparent; cursor: pointer; padding: 12px; font-weight: 600; font-size: 14px; border-radius: 6px;")
+              | ✅ Procesar Venta
+
+        if transaccion.estado === 'completado'
+          form(method="POST" action=`/transacciones/reembolsar/${transaccion.id}` style="flex: 1; min-width: 160px; display: flex;" onsubmit="return confirm('¿Confirmar reembolso de esta transacción?')")
+            button.btn-outline(type="submit" style="width: 100%; text-align: center; border-color: #6b728040; color: #9ca3af; background: transparent; cursor: pointer; padding: 12px; font-weight: 600; font-size: 14px; border-radius: 6px;")
+              | 🔄 Reembolsar
+

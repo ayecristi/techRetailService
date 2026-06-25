@@ -1,0 +1,51 @@
+extends ../layout
+
+block content
+  .dashboard-wrapper
+    .dashboard-header
+      div
+        h2 Control de Productos
+        p Gestión completa del catálogo de productos y stock de tu comercio.
+      a.btn-primary(href="/productos/nuevo") + Nuevo Producto
+
+    if productos && productos.length > 0
+      table
+        thead
+          tr
+            th Nombre
+            th Categoría
+            th Precio
+            th Stock
+            th Estado
+            th.text-right Acciones
+
+        tbody
+          each producto in productos
+            tr
+              td
+                span(style="color: var(--primary); font-weight: 600;")= producto.nombre
+              td
+                span(style="color: var(--text-muted);")= producto.categoria || 'Sin categoría'
+              td
+                strong(style="color: #f8fafc;") $#{producto.precio.toFixed(2)}
+              td
+                if producto.stock <= 5
+                  span(style="color: #ef4444; font-weight: 600;")= producto.stock
+                else
+                  span= producto.stock
+              td
+                if producto.activo
+                  span(style="color: #10b981; font-weight: 600;") Activo
+                else
+                  span(style="color: #ef4444; font-weight: 600;") Inactivo
+              td(style="text-align: right;")
+                .btn-row(style="display: inline-flex; gap: 8px; justify-content: flex-end;")
+                  a.btn-outline(href=`/productos/editar/${producto._id}` style="padding: 6px 12px; font-size: 12px; border-color: #f59e0b40; color: #f59e0b;") Editar
+                  form(method="POST" action=`/productos/eliminar/${producto._id}` style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este producto?')")
+                    button.btn-outline(type="submit" style="padding: 6px 12px; font-size: 12px; border-color: #ef444440; color: #ef4444; background: transparent; cursor: pointer;") Eliminar
+    else
+      .empty-state
+        span 📦
+        h4 Sin productos en catálogo
+        p Agrega productos para empezar a gestionar tus existencias y registrar ventas.
+        a.btn-outline(href="/productos/nuevo") Crear el primer producto

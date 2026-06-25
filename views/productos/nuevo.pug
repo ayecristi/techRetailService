@@ -1,66 +1,36 @@
 extends ../layout
 
 block content
-  .dashboard-wrapper
-    .dashboard-header
-      div
-        h2 Nuevo Producto
-        p Agregá un producto a tu catálogo
-      a.btn-outline(href="/tiendas") Volver al dashboard
+  .login-card(style="max-width: 500px; margin: 40px auto;")
+    h2 Nuevo Producto
+    p.subtitle Agregá un producto a tu catálogo de ventas.
 
-    .login-card(style="max-width: 600px;")
-      p#error.error
+    form(method="POST" action="/productos/guardar")
+      .form-group
+        label(for="nombre") Nombre
+        input(type="text" id="nombre" name="nombre" placeholder="Ej: Remera básica" required style="width: 100%;")
 
-      form#formProducto
+      .form-group
+        label(for="descripcion") Descripción
+        input(type="text" id="descripcion" name="descripcion" placeholder="Descripción del producto" style="width: 100%;")
 
-        .form-group
-          label Nombre
-          input(type="text", id="nombre", placeholder="Ej: Remera básica", required)
+      .form-row
+        .form-group(style="flex: 1;")
+          label(for="precio") Precio ($)
+          input(type="number" id="precio" name="precio" step="0.01" placeholder="0.00" min="0" required style="width: 100%;")
+        
+        .form-group(style="flex: 1;")
+          label(for="stock") Stock
+          input(type="number" id="stock" name="stock" placeholder="0" min="0" required style="width: 100%;")
 
-        .form-group
-          label Descripción
-          input(type="text", id="descripcion", placeholder="Descripción del producto")
+      .form-group
+        label(for="categoria") Categoría
+        input(type="text" id="categoria" name="categoria" placeholder="Ej: Ropa, Electrónica..." style="width: 100%;")
 
-        .form-row
-          .form-group
-            label Precio
-            input(type="number", id="precio", placeholder="0.00", min="0", required)
-          
-          .form-group
-            label Stock
-            input(type="number", id="stock", placeholder="0", min="0")
+      .form-group
+        label(for="imagenUrl") URL de Imagen
+        input(type="text" id="imagenUrl" name="imagenUrl" placeholder="http://..." style="width: 100%;")
 
-        .form-group
-          label Categoría
-          input(type="text", id="categoria", placeholder="Ej: Ropa, Electrónica...")
-
-        button.btn-submit(type="submit") Guardar producto
-
-  script.
-    document.getElementById('formProducto').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const body = {
-            nombre: document.getElementById('nombre').value,
-            descripcion: document.getElementById('descripcion').value,
-            precio: parseFloat(document.getElementById('precio').value),
-            stock: parseInt(document.getElementById('stock').value) || 0,
-            categoria: document.getElementById('categoria').value
-        };
-
-        const res = await fetch('/productos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            window.location.href = '/tiendas';
-        } else {
-            const errorEl = document.getElementById('error');
-            errorEl.textContent = data.mensaje;
-            errorEl.style.display = 'block';
-        }
-    });
+      .btn-row(style="margin-top: 25px; display: flex; gap: 12px;")
+        button.btn-primary(type="submit" style="flex: 1; padding: 12px; text-align: center; border: none; cursor: pointer;") Guardar Producto
+        a.btn-outline(href="/productos/listar" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; box-sizing: border-box;") Cancelar

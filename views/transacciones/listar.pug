@@ -49,11 +49,7 @@ block content
               td
                 strong(style="color: #f8fafc;") $#{transaccion.monto.toFixed(2)}
               td(style="text-align: right;")
-                .btn-row(style="display: inline-flex; gap: 8px; justify-content: flex-end;")
-                  a.btn-outline(href=`/transacciones/ver/${transaccion.id}` style="padding: 6px 12px; font-size: 12px;") Ver
-                  a.btn-outline(href=`/transacciones/editar/${transaccion.id}` style="padding: 6px 12px; font-size: 12px; border-color: #f59e0b40; color: #f59e0b;") Editar
-                  form(method="POST" action=`/transacciones/eliminar/${transaccion.id}` style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar esta transacción?')")
-                    button.btn-outline(type="submit" style="padding: 6px 12px; font-size: 12px; border-color: #ef444440; color: #ef4444; background: transparent; cursor: pointer;") Eliminar
+                a.btn-outline(href=`/transacciones/ver/${transaccion.id}` style="padding: 6px 12px; font-size: 12px;") Ver
     else
       .empty-state
         span 💸

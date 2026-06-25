@@ -16,9 +16,9 @@ block content
       .form-group
         label(for="usuarioId") Cliente / Usuario
         select(id="usuarioId" name="usuarioId" required style="background-color: #171717; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 14px; width: 100%;")
-          option(value="") -- Seleccionar Usuario --
+          option(value="") Seleccioná un usuario
           each usuario in usuarios
-            option(value=usuario.id selected=(String(usuario.id) === String(transaccion.usuarioId)))= usuario.nombre
+            option(value=String(usuario._id) selected=(String(usuario._id) === String(transaccion.usuarioId)))= usuario.personaId ? usuario.personaId.nombre + ' ' + usuario.personaId.apellido : usuario.email
 
       .form-row
         .form-group(style="flex: 1;")
