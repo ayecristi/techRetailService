@@ -43,6 +43,10 @@ cd techRetailService
 # 2. Instalar dependencias
 npm install
 
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+````
 ---
 
 ## Ejecución
